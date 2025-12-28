@@ -1,0 +1,1727 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EXIF Border Generator</title>
+<meta name="description" content="Add beautiful borders with camera metadata to your photos">
+<meta name="theme-color" content="#000000">
+
+<!-- PWA Meta Tags -->
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="EXIF Border">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📷</text></svg>">
+<script src="https://cdn.jsdelivr.net/npm/exif-js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+/* Reset & Base */
+* {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  box-sizing: border-box;
+  cursor: default;
+}
+
+input, select, textarea, button {
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
+  user-select: text;
+  cursor: auto;
+}
+
+:root {
+  --bg: #ffffff;
+  --surface: #f8fafc;
+  --card: #ffffff;
+  --text: #0f172a;
+  --text-secondary: #64748b;
+  --border: #e2e8f0;
+  --primary: #000000;
+  --primary-light: rgba(0, 0, 0, 0.05);
+  --accent: #3b82f6;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+[data-theme="dark"] {
+  --bg: #0f172a;
+  --surface: #1e293b;
+  --card: #1e293b;
+  --text: #f8fafc;
+  --text-secondary: #94a3b8;
+  --border: #334155;
+  --primary: #ffffff;
+  --primary-light: rgba(255, 255, 255, 0.1);
+  --accent: #60a5fa;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  transition: var(--transition);
+  min-height: 100vh;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.wrapper {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: clamp(1.5rem, 5vw, 2.5rem) clamp(1rem, 4vw, 2rem);
+}
+
+/* Header */
+header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 2.5rem;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+}
+
+.header-content h1 {
+  font-size: clamp(1.75rem, 4vw, 2.5rem);
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  margin: 0 0 0.5rem 0;
+  background: linear-gradient(135deg, var(--text) 0%, var(--text-secondary) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.header-content p {
+  color: var(--text-secondary);
+  margin: 0;
+  font-size: 0.95rem;
+  max-width: 36ch;
+}
+
+/* Theme Toggle */
+.theme-toggle {
+  background: transparent;
+  border: 1.5px solid var(--border);
+  color: var(--text);
+  padding: 0.625rem 1.25rem;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: var(--transition);
+  backdrop-filter: blur(10px);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.theme-toggle:hover {
+  border-color: var(--accent);
+  transform: translateY(-1px);
+}
+
+.theme-toggle::before {
+  content: '';
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  background: currentColor;
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='currentColor'%3E%3Cpath d='M12 2.25a.75.75 0 01.75.75v2.25a.75.75 0 01-1.5 0V3a.75.75 0 01.75-.75zM7.5 12a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM18.894 6.166a.75.75 0 00-1.06-1.06l-1.591 1.59a.75.75 0 101.06 1.061l1.591-1.59zM21.75 12a.75.75 0 01-.75.75h-2.25a.75.75 0 010-1.5H21a.75.75 0 01.75.75zM17.834 18.894a.75.75 0 001.06-1.06l-1.59-1.591a.75.75 0 10-1.061 1.06l1.59 1.591zM12 18a.75.75 0 01.75.75V21a.75.75 0 01-1.5 0v-2.25A.75.75 0 0112 18zM7.758 17.303a.75.75 0 00-1.061-1.06l-1.591 1.59a.75.75 0 001.06 1.061l1.591-1.59zM6 12a.75.75 0 01-.75.75H3a.75.75 0 010-1.5h2.25A.75.75 0 016 12zM6.697 7.757a.75.75 0 001.06-1.06l-1.59-1.591a.75.75 0 00-1.061 1.06l1.59 1.591z'/%3E%3C/svg%3E");
+  mask-repeat: no-repeat;
+  mask-position: center;
+}
+
+[data-theme="dark"] .theme-toggle::before {
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='currentColor'%3E%3Cpath fill-rule='evenodd' d='M9.528 1.718a.75.75 0 01.162.819A8.97 8.97 0 009 6a9 9 0 009 9 8.97 8.97 0 003.463-.69.75.75 0 01.981.98 10.503 10.503 0 01-9.694 6.46c-5.799 0-10.5-4.701-10.5-10.5 0-4.368 2.667-8.112 6.46-9.694a.75.75 0 01.818.162z' clip-rule='evenodd'/%3E%3C/svg%3E");
+}
+
+/* Card */
+.card {
+  background: var(--card);
+  border-radius: var(--radius-lg);
+  padding: clamp(1.5rem, 4vw, 2.5rem);
+  transition: var(--transition);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-md);
+}
+
+/* Upload Area */
+.upload-area {
+  border: 2px dashed var(--border);
+  border-radius: var(--radius-md);
+  padding: clamp(3rem, 8vw, 5rem) 2rem;
+  text-align: center;
+  cursor: pointer;
+  margin-bottom: 2.5rem;
+  transition: var(--transition);
+  background: var(--primary-light);
+  position: relative;
+  overflow: hidden;
+}
+
+.upload-area:hover {
+  border-color: var(--accent);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+.upload-area.dragover {
+  border-color: var(--accent);
+  background: var(--primary-light);
+}
+
+.upload-icon {
+  font-size: 3.5rem;
+  margin-bottom: 1.25rem;
+  opacity: 0.8;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+}
+
+.upload-text {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 0.5rem;
+}
+
+.upload-subtext {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  max-width: 24ch;
+  margin: 0 auto;
+}
+
+/* Controls */
+.controls-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2.5rem;
+}
+
+.control-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.control-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.control-value {
+  font-size: 0.75rem;
+  color: var(--accent);
+  font-weight: 600;
+  background: var(--primary-light);
+  padding: 0.25rem 0.5rem;
+  border-radius: var(--radius-sm);
+}
+
+/* Toggle Switch */
+.toggle-switch {
+  position: relative;
+  width: 52px;
+  height: 28px;
+  background: var(--border);
+  border-radius: 14px;
+  cursor: pointer;
+  transition: var(--transition);
+  flex-shrink: 0;
+}
+
+.toggle-switch.active {
+  background: var(--accent);
+}
+
+.toggle-switch::before {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 24px;
+  height: 24px;
+  background: white;
+  border-radius: 50%;
+  transition: transform 0.3s ease;
+  box-shadow: var(--shadow-sm);
+}
+
+.toggle-switch.active::before {
+  transform: translateX(24px);
+}
+
+.toggle-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+/* Sliders */
+input[type="range"] {
+  width: 100%;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--border);
+  outline: none;
+  -webkit-appearance: none;
+  margin: 0.5rem 0;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--accent);
+  cursor: pointer;
+  border: 3px solid var(--card);
+  box-shadow: var(--shadow-md);
+  transition: var(--transition);
+}
+
+input[type="range"]::-webkit-slider-thumb:hover {
+  transform: scale(1.1);
+  box-shadow: var(--shadow-lg);
+}
+
+/* Color Inputs */
+input[type="color"] {
+  width: 100%;
+  height: 40px;
+  border-radius: var(--radius-sm);
+  border: 2px solid var(--border);
+  background: transparent;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+input[type="color"]:hover {
+  border-color: var(--accent);
+  transform: translateY(-1px);
+}
+
+/* Selects */
+select {
+  width: 100%;
+  padding: 0.75rem;
+  border-radius: var(--radius-sm);
+  border: 2px solid var(--border);
+  background: var(--card);
+  color: var(--text);
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: var(--transition);
+  outline: none;
+}
+
+select:hover {
+  border-color: var(--accent);
+}
+
+/* Filter Buttons */
+.filter-options {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.filter-btn {
+  padding: 0.5rem;
+  background: var(--primary-light);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--transition);
+  text-align: center;
+}
+
+.filter-btn:hover {
+  border-color: var(--accent);
+  transform: translateY(-1px);
+}
+
+.filter-btn.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: white;
+}
+
+/* Position Buttons */
+.position-options {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.position-btn {
+  padding: 0.75rem 0.5rem;
+  background: var(--primary-light);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--transition);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.position-btn:hover {
+  border-color: var(--accent);
+  transform: translateY(-1px);
+}
+
+.position-btn.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: white;
+}
+
+.position-icon {
+  font-size: 1.25rem;
+  margin-bottom: 0.25rem;
+}
+
+/* Canvas Preview */
+.preview-wrap {
+  display: flex;
+  justify-content: center;
+  margin: 2.5rem 0;
+  position: relative;
+}
+
+.canvas-container {
+  position: relative;
+  max-width: 680px;
+  width: 100%;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  box-shadow: var(--shadow-lg);
+  transition: var(--transition);
+  border: 1px solid var(--border);
+}
+
+.canvas-container.portrait-preview {
+  max-width: 480px;
+}
+
+canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+  background: var(--surface);
+}
+
+/* Download Button */
+.download-btn {
+  display: block;
+  margin: 2.5rem auto 0;
+  padding: 1rem 2.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  border-radius: var(--radius-md);
+  border: none;
+  background: var(--primary);
+  color: white;
+  cursor: pointer;
+  transition: var(--transition);
+  position: relative;
+  overflow: hidden;
+  min-width: 200px;
+  letter-spacing: 0.5px;
+  box-shadow: var(--shadow-md);
+}
+
+[data-theme="dark"] .download-btn {
+  background: white;
+  color: #000000; /* Black text in dark mode */
+}
+
+.download-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+.download-btn:active {
+  transform: translateY(0);
+}
+
+.download-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* Footer */
+footer {
+  text-align: center;
+  margin-top: 3rem;
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border);
+}
+
+/* Font Preview */
+.font-preview {
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+  color: var(--text-secondary);
+  font-style: italic;
+  min-height: 1.5em;
+}
+
+/* Indicators */
+.orientation-indicator,
+.ratio-indicator {
+  display: inline-block;
+  padding: 0.25rem 0.5rem;
+  background: var(--primary-light);
+  color: var(--accent);
+  border-radius: var(--radius-sm);
+  font-size: 0.75rem;
+  font-weight: 600;
+  margin-left: 0.5rem;
+}
+
+/* Instagram Option */
+.instagram-option {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  margin-top: 0.25rem;
+}
+
+/* Offline Message */
+#offline-message {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #f8d7da;
+  color: #721c24;
+  padding: 12px 24px;
+  border-radius: 8px;
+  border: 1px solid #f5c6cb;
+  z-index: 10000;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+  from { transform: translate(-50%, -100%); opacity: 0; }
+  to { transform: translate(-50%, 0); opacity: 1; }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .wrapper {
+    padding: 1.25rem 1rem;
+  }
+  
+  .card {
+    padding: 1.5rem;
+  }
+  
+  .upload-area {
+    padding: 3rem 1rem;
+  }
+  
+  .controls-grid {
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
+  }
+  
+  header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1.25rem;
+  }
+  
+  .theme-toggle {
+    align-self: flex-start;
+  }
+  
+  .download-btn {
+    width: 100%;
+    max-width: 300px;
+  }
+  
+  .position-options {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .filter-options {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  
+  .canvas-container,
+  .canvas-container.portrait-preview {
+    max-width: 100%;
+  }
+  
+  .position-options {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  
+  .position-btn {
+    padding: 0.5rem 0.25rem;
+    font-size: 0.7rem;
+  }
+  
+  .position-icon {
+    font-size: 1rem;
+  }
+}
+</style>
+</head>
+
+<body data-theme="light">
+
+<div class="wrapper">
+
+<header>
+  <div class="header-content">
+    <h1>EXIF Border Generator</h1>
+    <p>Add beautiful borders with camera metadata to your photos</p>
+  </div>
+  <button class="theme-toggle" id="themeToggle">Dark Mode</button>
+</header>
+
+<div class="card">
+
+  <div class="upload-area" id="upload">
+    <div class="upload-icon">📷</div>
+    <div class="upload-text">Upload Your Photo</div>
+    <div class="upload-subtext">Click or drag & drop an image</div>
+    <input type="file" id="fileInput" accept="image/*" hidden>
+  </div>
+
+  <div class="controls-grid">
+    <!-- Instagram Size Control -->
+    <div class="control-group">
+      <div class="control-label">
+        <div class="toggle-label">
+          <span>Instagram Mode</span>
+          <span id="instagramRatioValue" class="ratio-indicator" style="display: none;">4:5</span>
+        </div>
+        <div class="toggle-switch" id="instagramToggle"></div>
+      </div>
+      <select id="instagramRatio" class="instagram-ratio" disabled>
+        <option value="4:5">Portrait (4:5)</option>
+        <option value="1:1">Square (1:1)</option>
+        <option value="1.91:1">Landscape (1.91:1)</option>
+      </select>
+      <div class="instagram-option">Adds top/bottom borders with Instagram aspect ratios</div>
+    </div>
+
+    <div class="control-group">
+      <div class="control-label">
+        <span>Font Family <span id="orientationIndicator" class="orientation-indicator" style="display: none;">Portrait</span></span>
+        <span class="control-value" id="fontFamilyValue">Inter</span>
+      </div>
+      <select id="fontFamily">
+        <option value="Inter">Inter (Modern Sans)</option>
+        <option value="Roboto">Roboto (Clean Sans)</option>
+        <option value="Poppins">Poppins (Geometric Sans)</option>
+        <option value="Montserrat">Montserrat (Elegant Sans)</option>
+        <option value="Open Sans">Open Sans (Friendly Sans)</option>
+        <option value="Playfair Display">Playfair Display (Elegant Serif)</option>
+        <option value="Lato">Lato (Corporate Sans)</option>
+        <option value="Raleway">Raleway (Stylish Sans)</option>
+        <option value="Source Sans Pro">Source Sans Pro (Professional Sans)</option>
+        <option value="Noto Sans">Noto Sans (Universal Sans)</option>
+      </select>
+      <div class="font-preview" id="fontPreview">The quick brown fox jumps over the lazy dog</div>
+    </div>
+
+    <div class="control-group">
+      <div class="control-label">
+        <div class="toggle-label">
+          <span>Show EXIF Data</span>
+        </div>
+        <div class="toggle-switch active" id="exifToggle"></div>
+      </div>
+      <div style="font-size: 0.75rem; color: var(--text-secondary);">Toggle to show/hide camera settings</div>
+    </div>
+
+    <!-- NEW: Text Position Control -->
+    <div class="control-group">
+      <div class="control-label">
+        <span>Text Position</span>
+        <span class="control-value" id="textPositionValue">Bottom Center</span>
+      </div>
+      <div class="position-options">
+        <button class="position-btn" data-position="bottom-left">
+          <span class="position-icon">↙️</span>
+          <span>Bottom Left</span>
+        </button>
+        <button class="position-btn active" data-position="bottom-center">
+          <span class="position-icon">⬇️</span>
+          <span>Bottom Center</span>
+        </button>
+        <button class="position-btn" data-position="bottom-right">
+          <span class="position-icon">↘️</span>
+          <span>Bottom Right</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="control-group">
+      <div class="control-label">
+        <span>Image Filter</span>
+        <span class="control-value" id="filterValue">None</span>
+      </div>
+      <div class="filter-options">
+        <button class="filter-btn active" data-filter="none">None</button>
+        <button class="filter-btn" data-filter="grayscale">B&W</button>
+        <button class="filter-btn" data-filter="sepia">Sepia</button>
+        <button class="filter-btn" data-filter="vintage">Vintage</button>
+        <button class="filter-btn" data-filter="cool">Cool</button>
+        <button class="filter-btn" data-filter="warm">Warm</button>
+        <button class="filter-btn" data-filter="high-contrast">Contrast</button>
+      </div>
+    </div>
+
+    <div class="control-group">
+      <div class="control-label">
+        <span>Font Size</span>
+        <span class="control-value" id="fontScaleValue">1.0</span>
+      </div>
+      <input type="range" id="fontScale" min="0.6" max="1.4" step="0.05" value="1">
+    </div>
+
+    <div class="control-group">
+      <div class="control-label">
+        <span>Line Spacing</span>
+        <span class="control-value" id="lineSpacingValue">1.2</span>
+      </div>
+      <input type="range" id="lineSpacing" min="0.8" max="2.0" step="0.05" value="1.2">
+    </div>
+
+    <div class="control-group">
+      <div class="control-label">
+        <span>Border Size</span>
+        <span class="control-value" id="borderSizeValue">4%</span>
+      </div>
+      <input type="range" id="borderSize" min="0.02" max="0.10" step="0.005" value="0.04">
+    </div>
+
+    <div class="control-group">
+      <div class="control-label">
+        <span>Border Color</span>
+        <span class="control-value" id="borderColorValue">#FFFFFF</span>
+      </div>
+      <input type="color" id="borderColor" value="#ffffff">
+    </div>
+
+    <div class="control-group">
+      <div class="control-label">
+        <span>Text Color</span>
+        <span class="control-value" id="textColorValue">#111111</span>
+      </div>
+      <input type="color" id="textColor" value="#111111">
+    </div>
+  </div>
+
+  <div class="preview-wrap">
+    <div class="canvas-container" id="canvasContainer">
+      <canvas id="previewCanvas"></canvas>
+    </div>
+  </div>
+
+  <button class="download-btn" id="downloadBtn" disabled>
+    Download Full Resolution
+  </button>
+
+</div>
+
+<footer>
+  <p>EXIF Border Generator • Add professional camera metadata borders to your photos</p>
+  <p style="font-size: 0.75rem; margin-top: 0.5rem;">Works offline • Install as app</p>
+</footer>
+
+</div>
+
+<script>
+class EXIFBorderApp {
+  constructor() {
+    this.initElements();
+    this.initUpload();
+    this.bindControls();
+    this.initTheme();
+    this.initOfflineStorage();
+    this.checkOfflineStatus();
+    this.updateControlValues();
+    this.updateFontPreview();
+    this.initServiceWorker();
+    
+    // Auto-save settings when controls change
+    const saveDebounce = this.debounce(() => this.saveSettings(), 1000);
+    [this.fontScaleEl, this.lineSpacingEl, this.borderSizeEl, 
+     this.borderColorEl, this.textColorEl, this.fontFamilyEl]
+      .forEach(el => el.addEventListener('input', saveDebounce));
+  }
+
+  debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+      const later = () => {
+        clearTimeout(timeout);
+        func(...args);
+      };
+      clearTimeout(timeout);
+      timeout = setTimeout(later, wait);
+    };
+  }
+
+  initElements() {
+    // Canvas elements
+    this.previewCanvas = document.getElementById("previewCanvas");
+    this.previewCtx = this.previewCanvas.getContext("2d");
+    this.canvasContainer = document.getElementById("canvasContainer");
+    
+    // Control elements
+    this.orientationIndicator = document.getElementById("orientationIndicator");
+    this.exifToggle = document.getElementById("exifToggle");
+    this.filterValue = document.getElementById("filterValue");
+    this.filterButtons = document.querySelectorAll('.filter-btn');
+    
+    // NEW: Position elements
+    this.textPositionValue = document.getElementById("textPositionValue");
+    this.positionButtons = document.querySelectorAll('.position-btn');
+    
+    // Instagram controls
+    this.instagramToggle = document.getElementById("instagramToggle");
+    this.instagramRatioEl = document.getElementById("instagramRatio");
+    this.instagramRatioValue = document.getElementById("instagramRatioValue");
+    
+    // Export canvas
+    this.exportCanvas = document.createElement("canvas");
+    this.exportCtx = this.exportCanvas.getContext("2d");
+    
+    // UI elements
+    this.upload = document.getElementById("upload");
+    this.input = document.getElementById("fileInput");
+    this.downloadBtn = document.getElementById("downloadBtn");
+    
+    // Control inputs
+    this.fontFamilyEl = document.getElementById("fontFamily");
+    this.fontScaleEl = document.getElementById("fontScale");
+    this.lineSpacingEl = document.getElementById("lineSpacing");
+    this.borderSizeEl = document.getElementById("borderSize");
+    this.borderColorEl = document.getElementById("borderColor");
+    this.textColorEl = document.getElementById("textColor");
+    
+    // Value display elements
+    this.fontPreview = document.getElementById("fontPreview");
+    this.fontFamilyValue = document.getElementById("fontFamilyValue");
+    this.fontScaleValue = document.getElementById("fontScaleValue");
+    this.lineSpacingValue = document.getElementById("lineSpacingValue");
+    this.borderSizeValue = document.getElementById("borderSizeValue");
+    this.borderColorValue = document.getElementById("borderColorValue");
+    this.textColorValue = document.getElementById("textColorValue");
+    
+    // State
+    this.image = null;
+    this.filteredImage = null;
+    this.exif = null;
+    this.renderQueued = false;
+    this.isPortrait = false;
+    this.showExif = true;
+    this.currentFilter = 'none';
+    this.instagramMode = false;
+    this.instagramRatio = "4:5";
+    this.textPosition = 'bottom-center'; // NEW: Default position
+  }
+
+  initOfflineStorage() {
+    // Store app settings locally
+    if (!localStorage.getItem('exifBorderSettings')) {
+      localStorage.setItem('exifBorderSettings', JSON.stringify({
+        theme: 'light',
+        fontSize: 1.0,
+        borderSize: 0.04,
+        textPosition: 'bottom-center', // NEW: Save position
+        lastImage: null
+      }));
+    }
+    
+    // Load saved settings
+    try {
+      const settings = JSON.parse(localStorage.getItem('exifBorderSettings'));
+      if (settings.theme) {
+        document.body.dataset.theme = settings.theme;
+        this.updateThemeButton();
+      }
+      if (settings.textPosition) {
+        this.setPosition(settings.textPosition);
+      }
+    } catch (e) {
+      console.log('No saved settings found');
+    }
+  }
+
+  saveSettings() {
+    const settings = {
+      theme: document.body.dataset.theme,
+      fontSize: this.fontScaleEl.value,
+      borderSize: this.borderSizeEl.value,
+      borderColor: this.borderColorEl.value,
+      textColor: this.textColorEl.value,
+      fontFamily: this.fontFamilyEl.value,
+      showExif: this.showExif,
+      instagramMode: this.instagramMode,
+      textPosition: this.textPosition, // NEW: Save position
+      lastUpdated: new Date().toISOString()
+    };
+    
+    localStorage.setItem('exifBorderSettings', JSON.stringify(settings));
+  }
+
+  setPosition(position) {
+    this.textPosition = position;
+    
+    // Update active button
+    this.positionButtons.forEach(btn => {
+      btn.classList.remove('active');
+      if (btn.dataset.position === position) {
+        btn.classList.add('active');
+      }
+    });
+    
+    // Update display value
+    const positionNames = {
+      'bottom-left': 'Bottom Left',
+      'bottom-center': 'Bottom Center',
+      'bottom-right': 'Bottom Right'
+    };
+    this.textPositionValue.textContent = positionNames[position] || position;
+    
+    this.queueRender();
+    this.saveSettings();
+  }
+
+  checkOfflineStatus() {
+    if (!navigator.onLine) {
+      this.showOfflineMessage();
+    }
+    
+    window.addEventListener('online', () => {
+      this.hideOfflineMessage();
+      console.log('App is back online');
+    });
+    
+    window.addEventListener('offline', () => {
+      this.showOfflineMessage();
+      console.log('App is offline');
+    });
+  }
+
+  showOfflineMessage() {
+    // Remove existing message if any
+    const existingMsg = document.getElementById('offline-message');
+    if (existingMsg) existingMsg.remove();
+    
+    const msg = document.createElement('div');
+    msg.id = 'offline-message';
+    msg.innerHTML = `
+      <div style="
+        position: fixed;
+        top: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: #f8d7da;
+        color: #721c24;
+        padding: 12px 24px;
+        border-radius: 8px;
+        border: 1px solid #f5c6cb;
+        z-index: 10000;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      ">
+        <span>⚠️</span>
+        <span>You're offline. App is running in offline mode.</span>
+      </div>
+    `;
+    
+    document.body.appendChild(msg);
+    
+    // Auto-remove after 5 seconds
+    setTimeout(() => {
+      if (msg.parentNode) {
+        msg.remove();
+      }
+    }, 5000);
+  }
+
+  hideOfflineMessage() {
+    const msg = document.getElementById('offline-message');
+    if (msg) {
+      msg.style.background = '#d4edda';
+      msg.style.color = '#155724';
+      msg.style.borderColor = '#c3e6cb';
+      msg.innerHTML = `
+        <span>✓</span>
+        <span>Back online! Changes will sync automatically.</span>
+      `;
+      
+      setTimeout(() => msg.remove(), 3000);
+    }
+  }
+
+  initTheme() {
+    const toggle = document.getElementById("themeToggle");
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const savedTheme = localStorage.getItem('theme');
+    
+    // Set initial theme
+    if (savedTheme) {
+      document.body.dataset.theme = savedTheme;
+    } else if (prefersDark) {
+      document.body.dataset.theme = 'dark';
+    }
+    
+    this.updateThemeButton();
+    
+    toggle.onclick = () => {
+      const root = document.body;
+      const dark = root.dataset.theme === "dark";
+      root.dataset.theme = dark ? "light" : "dark";
+      localStorage.setItem('theme', root.dataset.theme);
+      this.updateThemeButton();
+      this.saveSettings();
+    };
+  }
+
+  updateThemeButton() {
+    const toggle = document.getElementById("themeToggle");
+    const dark = document.body.dataset.theme === "dark";
+    toggle.textContent = dark ? "Light Mode" : "Dark Mode";
+  }
+
+  initUpload() {
+    this.upload.onclick = () => this.input.click();
+
+    ["dragenter","dragover"].forEach(e =>
+      this.upload.addEventListener(e, ev => {
+        ev.preventDefault();
+        this.upload.classList.add("dragover");
+      })
+    );
+
+    ["dragleave","drop"].forEach(e =>
+      this.upload.addEventListener(e, ev => {
+        ev.preventDefault();
+        this.upload.classList.remove("dragover");
+      })
+    );
+
+    this.upload.addEventListener("drop", e => {
+      const file = e.dataTransfer.files[0];
+      if (file?.type.startsWith("image")) this.loadImage(file);
+    });
+
+    this.input.onchange = e => this.loadImage(e.target.files[0]);
+  }
+
+  bindControls() {
+    // EXIF toggle
+    this.exifToggle.onclick = () => {
+      this.showExif = !this.showExif;
+      this.exifToggle.classList.toggle("active");
+      this.queueRender();
+      this.saveSettings();
+    };
+
+    // Instagram toggle
+    this.instagramToggle.onclick = () => {
+      this.instagramMode = !this.instagramMode;
+      this.instagramToggle.classList.toggle("active");
+      this.instagramRatioEl.disabled = !this.instagramMode;
+      
+      if (this.instagramMode) {
+        this.instagramRatioValue.textContent = this.instagramRatio;
+        this.instagramRatioValue.style.display = "inline-block";
+      } else {
+        this.instagramRatioValue.style.display = "none";
+      }
+      
+      this.queueRender();
+      this.saveSettings();
+    };
+
+    this.instagramRatioEl.onchange = () => {
+      this.instagramRatio = this.instagramRatioEl.value;
+      this.instagramRatioValue.textContent = this.instagramRatio;
+      this.queueRender();
+      this.saveSettings();
+    };
+
+    // Filter buttons
+    this.filterButtons.forEach(btn => {
+      btn.onclick = (e) => {
+        const filter = e.target.dataset.filter;
+        this.setFilter(filter);
+        this.saveSettings();
+      };
+    });
+
+    // NEW: Position buttons
+    this.positionButtons.forEach(btn => {
+      btn.onclick = (e) => {
+        const position = e.currentTarget.dataset.position;
+        this.setPosition(position);
+      };
+    });
+
+    // Update font preview when font changes
+    this.fontFamilyEl.onchange = () => {
+      this.updateControlValues();
+      this.updateFontPreview();
+      this.queueRender();
+      this.saveSettings();
+    };
+    
+    // Update all controls
+    [this.fontScaleEl, this.lineSpacingEl, this.borderSizeEl, this.borderColorEl, this.textColorEl]
+      .forEach(el => {
+        el.oninput = () => {
+          this.updateControlValues();
+          this.queueRender();
+          this.saveSettings();
+        };
+      });
+
+    this.downloadBtn.onclick = () => this.download();
+  }
+
+  updateControlValues() {
+    this.fontFamilyValue.textContent = this.fontFamilyEl.value.split(" (")[0];
+    this.fontScaleValue.textContent = parseFloat(this.fontScaleEl.value).toFixed(2);
+    this.lineSpacingValue.textContent = parseFloat(this.lineSpacingEl.value).toFixed(2);
+    this.borderSizeValue.textContent = `${Math.round(parseFloat(this.borderSizeEl.value) * 100)}%`;
+    this.borderColorValue.textContent = this.borderColorEl.value.toUpperCase();
+    this.textColorValue.textContent = this.textColorEl.value.toUpperCase();
+  }
+
+  updateFontPreview() {
+    const fontName = this.fontFamilyEl.value.split(" (")[0];
+    this.fontPreview.textContent = `Preview: ${fontName} font`;
+    this.fontPreview.style.fontFamily = `'${fontName}', sans-serif`;
+  }
+
+  setFilter(filter) {
+    this.currentFilter = filter;
+    this.filterValue.textContent = this.getFilterName(filter);
+    
+    // Update active button
+    this.filterButtons.forEach(btn => {
+      btn.classList.remove('active');
+      if (btn.dataset.filter === filter) {
+        btn.classList.add('active');
+      }
+    });
+    
+    if (this.image) {
+      this.applyFilterToImage();
+      this.queueRender();
+    }
+  }
+
+  getFilterName(filter) {
+    const names = {
+      'none': 'None',
+      'grayscale': 'Black & White',
+      'sepia': 'Sepia',
+      'vintage': 'Vintage',
+      'cool': 'Cool',
+      'warm': 'Warm',
+      'high-contrast': 'High Contrast'
+    };
+    return names[filter] || filter;
+  }
+
+  applyFilterToImage() {
+    if (!this.image) return;
+    
+    const tempCanvas = document.createElement('canvas');
+    const tempCtx = tempCanvas.getContext('2d');
+    
+    tempCanvas.width = this.image.width;
+    tempCanvas.height = this.image.height;
+    
+    tempCtx.drawImage(this.image, 0, 0);
+    
+    const imageData = tempCtx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
+    const data = imageData.data;
+    
+    switch(this.currentFilter) {
+      case 'grayscale':
+        this.applyGrayscale(data);
+        break;
+      case 'sepia':
+        this.applySepia(data);
+        break;
+      case 'vintage':
+        this.applyVintage(data);
+        break;
+      case 'cool':
+        this.applyCool(data);
+        break;
+      case 'warm':
+        this.applyWarm(data);
+        break;
+      case 'high-contrast':
+        this.applyHighContrast(data);
+        break;
+      default:
+        this.filteredImage = this.image;
+        return;
+    }
+    
+    tempCtx.putImageData(imageData, 0, 0);
+    
+    this.filteredImage = new Image();
+    this.filteredImage.src = tempCanvas.toDataURL();
+    
+    this.filteredImage.onload = () => {
+      this.queueRender();
+    };
+  }
+
+  applyGrayscale(data) {
+    for (let i = 0; i < data.length; i += 4) {
+      const avg = (data[i] + data[i + 1] + data[i + 2]) / 3;
+      data[i] = avg;
+      data[i + 1] = avg;
+      data[i + 2] = avg;
+    }
+  }
+
+  applySepia(data) {
+    for (let i = 0; i < data.length; i += 4) {
+      const r = data[i];
+      const g = data[i + 1];
+      const b = data[i + 2];
+      
+      data[i] = Math.min(255, (r * 0.393) + (g * 0.769) + (b * 0.189));
+      data[i + 1] = Math.min(255, (r * 0.349) + (g * 0.686) + (b * 0.168));
+      data[i + 2] = Math.min(255, (r * 0.272) + (g * 0.534) + (b * 0.131));
+    }
+  }
+
+  applyVintage(data) {
+    for (let i = 0; i <data.length; i += 4) {
+      const avg = (data[i] + data[i + 1] + data[i + 2]) / 3;
+      data[i] = avg * 0.7 + data[i] * 0.3;
+      data[i + 1] = avg * 0.7 + data[i + 1] * 0.3;
+      data[i + 2] = avg * 0.7 + data[i + 2] * 0.3;
+      
+      data[i] = Math.min(255, data[i] * 1.1);
+      data[i + 1] = Math.min(255, data[i + 1] * 0.9);
+      data[i + 2] = Math.min(255, data[i + 2] * 0.8);
+      
+      const contrast = 0.9;
+      data[i] = ((data[i] - 128) * contrast) + 128;
+      data[i + 1] = ((data[i + 1] - 128) * contrast) + 128;
+      data[i + 2] = ((data[i + 2] - 128) * contrast) + 128;
+    }
+  }
+
+  applyCool(data) {
+    for (let i = 0; i < data.length; i += 4) {
+      data[i] = Math.max(0, data[i] * 0.9);
+      data[i + 2] = Math.min(255, data[i + 2] * 1.1);
+    }
+  }
+
+  applyWarm(data) {
+    for (let i = 0; i < data.length; i += 4) {
+      data[i] = Math.min(255, data[i] * 1.1);
+      data[i + 1] = Math.min(255, data[i + 1] * 1.05);
+      data[i + 2] = Math.max(0, data[i + 2] * 0.9);
+    }
+  }
+
+  applyHighContrast(data) {
+    for (let i = 0; i < data.length; i += 4) {
+      const contrast = 1.5;
+      data[i] = ((data[i] - 128) * contrast) + 128;
+      data[i + 1] = ((data[i + 1] - 128) * contrast) + 128;
+      data[i + 2] = ((data[i + 2] - 128) * contrast) + 128;
+      
+      data[i] = Math.max(0, Math.min(255, data[i]));
+      data[i + 1] = Math.max(0, Math.min(255, data[i + 1]));
+      data[i + 2] = Math.max(0, Math.min(255, data[i + 2]));
+    }
+  }
+
+  loadImage(file) {
+    const img = new Image();
+    img.src = URL.createObjectURL(file);
+
+    img.onload = () => {
+      this.image = img;
+      this.filteredImage = img;
+      
+      this.isPortrait = img.height > img.width;
+      this.updateOrientationIndicator();
+      
+      EXIF.getData(img, () => {
+        this.exif = {
+          make: EXIF.getTag(img, "Make"),
+          model: EXIF.getTag(img, "Model"),
+          focal: EXIF.getTag(img, "FocalLength"),
+          aperture: EXIF.getTag(img, "FNumber"),
+          shutter: EXIF.getTag(img, "ExposureTime"),
+          iso: EXIF.getTag(img, "ISOSpeedRatings")
+        };
+        this.queueRender();
+        this.downloadBtn.disabled = false;
+      });
+    };
+  }
+
+  updateOrientationIndicator() {
+    if (this.isPortrait) {
+      this.orientationIndicator.textContent = "Portrait";
+      this.orientationIndicator.style.display = "inline-block";
+      this.canvasContainer.classList.add("portrait-preview");
+    } else {
+      this.orientationIndicator.textContent = "Landscape";
+      this.orientationIndicator.style.display = "inline-block";
+      this.canvasContainer.classList.remove("portrait-preview");
+    }
+  }
+
+  getInstagramRatioValue() {
+    return {
+      "4:5": 4/5,
+      "1:1": 1,
+      "1.91:1": 1.91
+    }[this.instagramRatio];
+  }
+
+  queueRender() {
+    if (this.renderQueued) return;
+    this.renderQueued = true;
+    requestAnimationFrame(() => {
+      this.renderQueued = false;
+      this.render(this.previewCtx, this.previewCanvas, true);
+    });
+  }
+
+  render(ctx, canvas, preview) {
+    if (!this.image || !this.exif) return;
+
+    const imageToDraw = this.filteredImage || this.image;
+
+    // Calculate scale for preview or full resolution
+    let scale;
+    if (preview) {
+      if (this.isPortrait) {
+        scale = Math.min(1, 480 / this.image.width);
+      } else {
+        scale = Math.min(1, 680 / this.image.width);
+      }
+    } else {
+      scale = 1;
+    }
+
+    const imgW = this.image.width * scale;
+    const imgH = this.image.height * scale;
+
+    const borderRatio = +this.borderSizeEl.value;
+    
+    // Calculate borders
+    let side, top, bottom;
+    if (this.instagramMode) {
+      side = imgW * borderRatio * 0.5;
+      top = imgH * borderRatio * 1.5;
+      
+      if (this.showExif) {
+        bottom = imgH * borderRatio * 4.0;
+      } else {
+        bottom = imgH * borderRatio * 2.5;
+      }
+    } else {
+      side = imgW * borderRatio;
+      top = imgW * borderRatio;
+      
+      if (this.showExif) {
+        bottom = imgH * borderRatio * (this.isPortrait ? 5.0 : 4.0);
+      } else {
+        bottom = imgH * borderRatio * (this.isPortrait ? 2.5 : 2.0);
+      }
+    }
+
+    // Base content dimensions
+    const contentWidth = imgW + side * 2;
+    const contentHeight = imgH + top + bottom;
+
+    let canvasW = contentWidth;
+    let canvasH = contentHeight;
+    let contentX = side;
+    let contentY = top;
+
+    // Apply Instagram padding if needed
+    if (this.instagramMode) {
+      const targetRatio = this.getInstagramRatioValue();
+      const contentRatio = contentWidth / contentHeight;
+      
+      if (contentRatio > targetRatio) {
+        // Content is wider than target - add vertical padding
+        canvasH = contentWidth / targetRatio;
+        const paddingY = (canvasH - contentHeight) / 2;
+        contentY = top + paddingY;
+      } else if (contentRatio < targetRatio) {
+        // Content is taller than target - add horizontal padding
+        canvasW = contentHeight * targetRatio;
+        const paddingX = (canvasW - contentWidth) / 2;
+        contentX = side + paddingX;
+      }
+    }
+
+    canvas.width = canvasW;
+    canvas.height = canvasH;
+
+    // Fill background
+    ctx.fillStyle = this.borderColorEl.value;
+    ctx.fillRect(0, 0, canvasW, canvasH);
+
+    // Draw the image
+    ctx.drawImage(imageToDraw, contentX, contentY, imgW, imgH);
+
+    const fontFamily = this.fontFamilyEl.value.split(" (")[0];
+    const titleSize = Math.max(26 * scale, canvas.width / 48) * +this.fontScaleEl.value;
+    const metaSize = titleSize * 0.75;
+    const lineSpacing = +this.lineSpacingEl.value;
+
+    ctx.textBaseline = "middle";
+    ctx.fillStyle = this.textColorEl.value;
+
+    // Calculate text positions
+    const textAreaTop = contentY + imgH;
+    const textAreaHeight = bottom;
+    
+    // Build camera text
+    const cameraText = `${[this.exif.make, this.exif.model].filter(Boolean).join(" ") || "Unknown Camera"}`;
+    
+    if (this.showExif) {
+      // Calculate Y positions
+      const titleY = textAreaTop + (textAreaHeight * 0.35);
+      const metaY = titleY + (titleSize * lineSpacing * 0.8);
+      
+      if (this.textPosition === 'bottom-center') {
+        // CENTER ALIGNMENT
+        ctx.textAlign = "center";
+        
+        // Draw "Shot on Camera Brand" as a single line (center alignment)
+        ctx.font = `400 ${titleSize}px "${fontFamily}", system-ui`;
+        const shotOnWidth = ctx.measureText("Shot on ").width;
+        const cameraWidth = ctx.measureText(cameraText).width;
+        
+        // Calculate total width and starting position
+        const totalWidth = shotOnWidth + cameraWidth;
+        const startX = contentX + (imgW / 2) - (totalWidth / 2);
+        
+        // Draw "Shot on" (regular weight)
+        ctx.textAlign = "left";
+        ctx.fillText("Shot on ", startX, titleY);
+        
+        // Draw camera brand/model (bold weight)
+        ctx.font = `700 ${titleSize}px "${fontFamily}", system-ui`;
+        ctx.fillText(cameraText, startX + shotOnWidth, titleY);
+        
+        // Draw EXIF data - centered
+        ctx.font = `400 ${metaSize}px "${fontFamily}", system-ui`;
+        ctx.textAlign = "center";
+        
+        // Build EXIF string
+        let exifString = "";
+        if (this.exif.focal) exifString += Math.round(this.exif.focal) + "mm  ";
+        if (this.exif.aperture) exifString += "f/" + this.exif.aperture + "  ";
+        if (this.exif.shutter) {
+          if (this.exif.shutter < 1) {
+            exifString += "1/" + Math.round(1 / this.exif.shutter) + "s  ";
+          } else {
+            exifString += this.exif.shutter + "s  ";
+          }
+        }
+        if (this.exif.iso) exifString += "ISO" + this.exif.iso;
+        
+        // Draw EXIF data
+        if (exifString.trim()) {
+          ctx.fillText(exifString.trim(), contentX + (imgW / 2), metaY);
+        }
+        
+      } else if (this.textPosition === 'bottom-left') {
+        // LEFT ALIGNMENT
+        const padding = 20;
+        const textX = contentX + padding;
+        
+        ctx.textAlign = "left";
+        
+        // Draw "Shot on Camera Brand" as a single line
+        ctx.font = `400 ${titleSize}px "${fontFamily}", system-ui`;
+        ctx.fillText("Shot on ", textX, titleY);
+        
+        // Measure "Shot on " width
+        const shotOnWidth = ctx.measureText("Shot on ").width;
+        
+        // Draw camera brand/model (bold weight)
+        ctx.font = `700 ${titleSize}px "${fontFamily}", system-ui`;
+        ctx.fillText(cameraText, textX + shotOnWidth, titleY);
+        
+        // Draw EXIF data
+        ctx.font = `400 ${metaSize}px "${fontFamily}", system-ui`;
+        
+        // Build EXIF string
+        let exifString = "";
+        if (this.exif.focal) exifString += Math.round(this.exif.focal) + "mm  ";
+        if (this.exif.aperture) exifString += "f/" + this.exif.aperture + "  ";
+        if (this.exif.shutter) {
+          if (this.exif.shutter < 1) {
+            exifString += "1/" + Math.round(1 / this.exif.shutter) + "s  ";
+          } else {
+            exifString += this.exif.shutter + "s  ";
+          }
+        }
+        if (this.exif.iso) exifString += "ISO" + this.exif.iso;
+        
+        // Draw EXIF data
+        if (exifString.trim()) {
+          ctx.fillText(exifString.trim(), textX, metaY);
+        }
+        
+      } else if (this.textPosition === 'bottom-right') {
+        // RIGHT ALIGNMENT - FIXED
+        const padding = 20;
+        const maxTextX = contentX + imgW - padding;
+        
+        ctx.textAlign = "right";
+        
+        // First, measure the total width of "Shot on Camera Brand"
+        ctx.font = `400 ${titleSize}px "${fontFamily}", system-ui`;
+        const shotOnWidth = ctx.measureText("Shot on ").width;
+        
+        ctx.font = `700 ${titleSize}px "${fontFamily}", system-ui`;
+        const cameraWidth = ctx.measureText(cameraText).width;
+        
+        const totalWidth = shotOnWidth + cameraWidth;
+        const textX = maxTextX;
+        
+        // Draw camera brand/model first (right-aligned)
+        ctx.font = `700 ${titleSize}px "${fontFamily}", system-ui`;
+        ctx.fillText(cameraText, textX, titleY);
+        
+        // Then draw "Shot on " to the left of camera text
+        ctx.font = `400 ${titleSize}px "${fontFamily}", system-ui`;
+        ctx.fillText("Shot on ", textX - cameraWidth, titleY);
+        
+        // Draw EXIF data
+        ctx.font = `400 ${metaSize}px "${fontFamily}", system-ui`;
+        
+        // Build EXIF string
+        let exifString = "";
+        if (this.exif.focal) exifString += Math.round(this.exif.focal) + "mm  ";
+        if (this.exif.aperture) exifString += "f/" + this.exif.aperture + "  ";
+        if (this.exif.shutter) {
+          if (this.exif.shutter < 1) {
+            exifString += "1/" + Math.round(1 / this.exif.shutter) + "s  ";
+          } else {
+            exifString += this.exif.shutter + "s  ";
+          }
+        }
+        if (this.exif.iso) exifString += "ISO" + this.exif.iso;
+        
+        // Draw EXIF data (right-aligned)
+        if (exifString.trim()) {
+          ctx.fillText(exifString.trim(), textX, metaY);
+        }
+      }
+      
+    } else {
+      // When hiding EXIF
+      const titleY = textAreaTop + (textAreaHeight / 2);
+      
+      if (this.textPosition === 'bottom-center') {
+        // Center alignment
+        ctx.textAlign = "center";
+        
+        ctx.font = `400 ${titleSize}px "${fontFamily}", system-ui`;
+        const shotOnWidth = ctx.measureText("Shot on ").width;
+        const cameraWidth = ctx.measureText(cameraText).width;
+        
+        const totalWidth = shotOnWidth + cameraWidth;
+        const startX = contentX + (imgW / 2) - (totalWidth / 2);
+        
+        ctx.textAlign = "left";
+        ctx.fillText("Shot on ", startX, titleY);
+        
+        ctx.font = `700 ${titleSize}px "${fontFamily}", system-ui`;
+        ctx.fillText(cameraText, startX + shotOnWidth, titleY);
+        
+      } else if (this.textPosition === 'bottom-left') {
+        // Left alignment
+        const padding = 20;
+        const textX = contentX + padding;
+        
+        ctx.textAlign = "left";
+        
+        ctx.font = `400 ${titleSize}px "${fontFamily}", system-ui`;
+        ctx.fillText("Shot on ", textX, titleY);
+        
+        const shotOnWidth = ctx.measureText("Shot on ").width;
+        
+        ctx.font = `700 ${titleSize}px "${fontFamily}", system-ui`;
+        ctx.fillText(cameraText, textX + shotOnWidth, titleY);
+        
+      } else if (this.textPosition === 'bottom-right') {
+        // Right alignment - FIXED
+        const padding = 20;
+        const maxTextX = contentX + imgW - padding;
+        
+        ctx.textAlign = "right";
+        
+        // First, measure the total width
+        ctx.font = `400 ${titleSize}px "${fontFamily}", system-ui`;
+        const shotOnWidth = ctx.measureText("Shot on ").width;
+        
+        ctx.font = `700 ${titleSize}px "${fontFamily}", system-ui`;
+        const cameraWidth = ctx.measureText(cameraText).width;
+        
+        const totalWidth = shotOnWidth + cameraWidth;
+        const textX = maxTextX;
+        
+        // Draw camera brand/model first (right-aligned)
+        ctx.font = `700 ${titleSize}px "${fontFamily}", system-ui`;
+        ctx.fillText(cameraText, textX, titleY);
+        
+        // Then draw "Shot on " to the left of camera text
+        ctx.font = `400 ${titleSize}px "${fontFamily}", system-ui`;
+        ctx.fillText("Shot on ", textX - cameraWidth, titleY);
+      }
+    }
+  }
+
+  download() {
+    this.render(this.exportCtx, this.exportCanvas, false);
+    const a = document.createElement("a");
+    const mode = this.instagramMode ? "instagram-" : "exif-border-";
+    a.download = `${mode}${new Date().getTime()}.jpg`;
+    a.href = this.exportCanvas.toDataURL("image/jpeg", 0.98);
+    a.click();
+  }
+
+  initServiceWorker() {
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js')
+          .then(registration => {
+            console.log('ServiceWorker registered');
+          })
+          .catch(err => {
+            console.log('ServiceWorker registration failed:', err);
+          });
+      });
+    }
+  }
+}
+
+// Initialize app when DOM is loaded
+document.addEventListener('DOMContentLoaded', () => {
+  new EXIFBorderApp();
+});
+
+// Add beforeinstallprompt for PWA installation
+let deferredPrompt;
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  
+  // Show install button after 3 seconds
+  setTimeout(() => {
+    if (deferredPrompt) {
+      const installBtn = document.createElement('button');
+      installBtn.textContent = '📱 Install App';
+      installBtn.style.cssText = `
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        padding: 10px 20px;
+        background: var(--accent);
+        color: white;
+        border: none;
+        border-radius: 20px;
+        font-size: 14px;
+        cursor: pointer;
+        z-index: 1000;
+        box-shadow: var(--shadow-md);
+        transition: var(--transition);
+      `;
+      installBtn.onclick = () => {
+        deferredPrompt.prompt();
+        deferredPrompt.userChoice.then(() => {
+          installBtn.remove();
+        });
+      };
+      document.body.appendChild(installBtn);
+      
+      // Auto-remove after 10 seconds
+      setTimeout(() => {
+        if (installBtn.parentNode) {
+          installBtn.remove();
+        }
+      }, 10000);
+    }
+  }, 3000);
+});
+</script>
+</body>
+</html>
