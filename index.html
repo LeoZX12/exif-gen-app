@@ -458,6 +458,47 @@ select:hover {
   margin-bottom: 0.25rem;
 }
 
+/* Sensor Mode Options */
+.sensor-options {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.sensor-btn {
+  padding: 0.75rem 0.5rem;
+  background: var(--primary-light);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--transition);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.sensor-btn:hover {
+  border-color: var(--accent);
+  transform: translateY(-1px);
+}
+
+.sensor-btn.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: white;
+}
+
+.sensor-icon {
+  font-size: 1.25rem;
+  margin-bottom: 0.25rem;
+}
+
 /* Canvas Preview */
 .preview-wrap {
   display: flex;
@@ -550,7 +591,8 @@ footer {
 
 /* Indicators */
 .orientation-indicator,
-.ratio-indicator {
+.ratio-indicator,
+.sensor-indicator {
   display: inline-block;
   padding: 0.25rem 0.5rem;
   background: var(--primary-light);
@@ -580,6 +622,26 @@ footer {
 
 .contrast-warning.hidden {
   display: none;
+}
+
+/* Sensor Mode Tooltip */
+.sensor-tooltip {
+  position: absolute;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0.75rem;
+  font-size: 0.75rem;
+  max-width: 250px;
+  box-shadow: var(--shadow-md);
+  z-index: 100;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.sensor-tooltip.show {
+  opacity: 1;
 }
 
 /* Responsive */
@@ -617,8 +679,13 @@ footer {
   }
   
   .position-options,
-  .layout-options {
+  .layout-options,
+  .sensor-options {
     grid-template-columns: repeat(3, 1fr);
+  }
+  
+  .filter-options {
+    grid-template-columns: repeat(4, 1fr);
   }
 }
 
@@ -633,18 +700,21 @@ footer {
   }
   
   .position-options,
-  .layout-options {
+  .layout-options,
+  .sensor-options {
     grid-template-columns: repeat(2, 1fr);
   }
   
   .position-btn,
-  .layout-btn {
+  .layout-btn,
+  .sensor-btn {
     padding: 0.5rem 0.25rem;
     font-size: 0.7rem;
   }
   
   .position-icon,
-  .layout-icon {
+  .layout-icon,
+  .sensor-icon {
     font-size: 1rem;
   }
 }
@@ -673,6 +743,38 @@ footer {
   </div>
 
   <div class="controls-grid">
+    <!-- NEW: Sensor Mode Control -->
+    <div class="control-group">
+      <div class="control-label">
+        <span>Sensor Mode <span id="sensorIndicator" class="sensor-indicator">Full Frame</span></span>
+        <span class="control-value" id="sensorValue">Full Frame</span>
+      </div>
+      <div class="sensor-options">
+        <button class="sensor-btn active" data-sensor="fullframe">
+          <span class="sensor-icon">📷</span>
+          <span>Full Frame</span>
+        </button>
+        <button class="sensor-btn" data-sensor="aps-c">
+          <span class="sensor-icon">🔍</span>
+          <span>APS-C (1.5x)</span>
+        </button>
+        <button class="sensor-btn" data-sensor="mft">
+          <span class="sensor-icon">📐</span>
+          <span>MFT (2.0x)</span>
+        </button>
+        <button class="sensor-btn" data-sensor="canon-crop">
+          <span class="sensor-icon">📊</span>
+          <span>Canon APS-C (1.6x)</span>
+        </button>
+      </div>
+      <div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.5rem;">
+        <strong>Full Frame:</strong> Shows 35mm equivalent (×1.5 from APS-C)<br>
+        <strong>APS-C:</strong> Shows actual focal length (no conversion)<br>
+        <strong>MFT:</strong> Shows equivalent for MFT (×0.75 from APS-C)<br>
+        <strong>Canon APS-C:</strong> Shows equivalent for Canon (×0.94 from APS-C)
+      </div>
+    </div>
+
     <!-- Borderless Mode -->
     <div class="control-group">
       <div class="control-label">
@@ -789,7 +891,7 @@ footer {
       <div style="font-size: 0.75rem; color: var(--text-secondary);">Opacity of the background behind text</div>
     </div>
 
-    <!-- NEW: Text Background Color -->
+    <!-- Text Background Color -->
     <div class="control-group">
       <div class="control-label">
         <span>Text Background Color</span>
@@ -802,6 +904,7 @@ footer {
       </div>
     </div>
 
+    <!-- ENHANCED: More Filter Options -->
     <div class="control-group">
       <div class="control-label">
         <span>Image Filter</span>
@@ -815,6 +918,15 @@ footer {
         <button class="filter-btn" data-filter="cool">Cool</button>
         <button class="filter-btn" data-filter="warm">Warm</button>
         <button class="filter-btn" data-filter="high-contrast">Contrast</button>
+        <button class="filter-btn" data-filter="kodachrome">Kodachrome</button>
+        <button class="filter-btn" data-filter="polaroid">Polaroid</button>
+        <button class="filter-btn" data-filter="film-grain">Film Grain</button>
+        <button class="filter-btn" data-filter="instagram">Instagram</button>
+        <button class="filter-btn" data-filter="lomo">Lomo</button>
+        <button class="filter-btn" data-filter="cinematic">Cinematic</button>
+        <button class="filter-btn" data-filter="faded">Faded</button>
+        <button class="filter-btn" data-filter="dramatic">Dramatic</button>
+        <button class="filter-btn" data-filter="urban">Urban</button>
       </div>
     </div>
 
@@ -934,6 +1046,11 @@ class EXIFBorderApp {
     this.filterValue = document.getElementById("filterValue");
     this.filterButtons = document.querySelectorAll('.filter-btn');
     
+    // NEW: Sensor mode elements
+    this.sensorIndicator = document.getElementById("sensorIndicator");
+    this.sensorValue = document.getElementById("sensorValue");
+    this.sensorButtons = document.querySelectorAll('.sensor-btn');
+    
     // Borderless toggle
     this.borderlessToggle = document.getElementById("borderlessToggle");
     
@@ -1000,6 +1117,12 @@ class EXIFBorderApp {
     this.layout = 'classic';
     this.textBgOpacity = 0;
     this.textBgColor = "#ffffff";
+    
+    // NEW: Sensor mode state - FIXED LOGIC
+    this.sensorMode = 'fullframe'; // 'fullframe', 'aps-c', 'mft', 'canon-crop'
+    
+    // Store the actual focal length from EXIF
+    this.actualFocalLength = null;
   }
 
   initOfflineStorage() {
@@ -1012,7 +1135,8 @@ class EXIFBorderApp {
         borderlessMode: false,
         layout: 'classic',
         textBgOpacity: 0,
-        textBgColor: "#ffffff"
+        textBgColor: "#ffffff",
+        sensorMode: 'fullframe'
       }));
     }
     
@@ -1037,6 +1161,9 @@ class EXIFBorderApp {
       if (settings.textBgColor) {
         this.setTextBgColor(settings.textBgColor);
       }
+      if (settings.sensorMode) {
+        this.setSensorMode(settings.sensorMode);
+      }
     } catch (e) {
       console.log('No saved settings found');
     }
@@ -1057,10 +1184,35 @@ class EXIFBorderApp {
       layout: this.layout,
       textBgOpacity: this.textBgOpacity,
       textBgColor: this.textBgColor,
+      sensorMode: this.sensorMode,
+      currentFilter: this.currentFilter,
       lastUpdated: new Date().toISOString()
     };
     
     localStorage.setItem('exifBorderSettings', JSON.stringify(settings));
+  }
+
+  setSensorMode(mode) {
+    this.sensorMode = mode;
+    
+    this.sensorButtons.forEach(btn => {
+      btn.classList.remove('active');
+      if (btn.dataset.sensor === mode) {
+        btn.classList.add('active');
+      }
+    });
+    
+    const sensorNames = {
+      'fullframe': 'Full Frame',
+      'aps-c': 'APS-C (1.5x)',
+      'mft': 'MFT (2.0x)',
+      'canon-crop': 'Canon APS-C (1.6x)'
+    };
+    this.sensorValue.textContent = sensorNames[mode] || mode;
+    this.sensorIndicator.textContent = sensorNames[mode].split(' (')[0];
+    
+    this.queueRender();
+    this.saveSettings();
   }
 
   setBorderlessMode(enabled) {
@@ -1243,6 +1395,14 @@ class EXIFBorderApp {
   }
 
   bindControls() {
+    // NEW: Sensor mode buttons
+    this.sensorButtons.forEach(btn => {
+      btn.onclick = (e) => {
+        const sensorMode = e.currentTarget.dataset.sensor;
+        this.setSensorMode(sensorMode);
+      };
+    });
+
     // EXIF toggle
     this.exifToggle.onclick = () => {
       this.showExif = !this.showExif;
@@ -1377,7 +1537,16 @@ class EXIFBorderApp {
       'vintage': 'Vintage',
       'cool': 'Cool',
       'warm': 'Warm',
-      'high-contrast': 'High Contrast'
+      'high-contrast': 'High Contrast',
+      'kodachrome': 'Kodachrome',
+      'polaroid': 'Polaroid',
+      'film-grain': 'Film Grain',
+      'instagram': 'Instagram',
+      'lomo': 'Lomo',
+      'cinematic': 'Cinematic',
+      'faded': 'Faded',
+      'dramatic': 'Dramatic',
+      'urban': 'Urban'
     };
     return names[filter] || filter;
   }
@@ -1415,6 +1584,33 @@ class EXIFBorderApp {
       case 'high-contrast':
         this.applyHighContrast(data);
         break;
+      case 'kodachrome':
+        this.applyKodachrome(data);
+        break;
+      case 'polaroid':
+        this.applyPolaroid(data);
+        break;
+      case 'film-grain':
+        this.applyFilmGrain(data, tempCanvas.width, tempCanvas.height);
+        break;
+      case 'instagram':
+        this.applyInstagram(data);
+        break;
+      case 'lomo':
+        this.applyLomo(data);
+        break;
+      case 'cinematic':
+        this.applyCinematic(data);
+        break;
+      case 'faded':
+        this.applyFaded(data);
+        break;
+      case 'dramatic':
+        this.applyDramatic(data);
+        break;
+      case 'urban':
+        this.applyUrban(data);
+        break;
       default:
         this.filteredImage = this.image;
         return;
@@ -1430,6 +1626,7 @@ class EXIFBorderApp {
     };
   }
 
+  // Existing filters
   applyGrayscale(data) {
     for (let i = 0; i < data.length; i += 4) {
       const avg = (data[i] + data[i + 1] + data[i + 2]) / 3;
@@ -1492,6 +1689,254 @@ class EXIFBorderApp {
     }
   }
 
+  // NEW: Kodachrome - Classic film look with rich colors
+  applyKodachrome(data) {
+    for (let i = 0; i < data.length; i += 4) {
+      const r = data[i];
+      const g = data[i + 1];
+      const b = data[i + 2];
+      
+      // Boost reds and yellows, desaturate blues
+      data[i] = Math.min(255, r * 1.2); // Boost reds
+      data[i + 1] = Math.min(255, g * 1.1); // Slightly boost greens
+      data[i + 2] = Math.max(0, b * 0.9); // Reduce blues
+      
+      // Add slight warmth
+      data[i] = Math.min(255, data[i] * 1.05);
+      data[i + 1] = Math.min(255, data[i + 1] * 1.02);
+      
+      // Increase contrast
+      const avg = (data[i] + data[i + 1] + data[i + 2]) / 3;
+      data[i] = avg * 0.3 + data[i] * 0.7;
+      data[i + 1] = avg * 0.3 + data[i + 1] * 0.7;
+      data[i + 2] = avg * 0.4 + data[i + 2] * 0.6;
+    }
+  }
+
+  // NEW: Polaroid - Soft, washed out with vintage feel
+  applyPolaroid(data) {
+    for (let i = 0; i < data.length; i += 4) {
+      const r = data[i];
+      const g = data[i + 1];
+      const b = data[i + 2];
+      
+      // Desaturate slightly
+      const avg = (r + g + b) / 3;
+      data[i] = avg * 0.3 + r * 0.7;
+      data[i + 1] = avg * 0.3 + g * 0.7;
+      data[i + 2] = avg * 0.3 + b * 0.7;
+      
+      // Add warm tint
+      data[i] = Math.min(255, data[i] * 1.08); // More red
+      data[i + 1] = Math.min(255, data[i + 1] * 1.05); // More green
+      data[i + 2] = Math.max(0, data[i + 2] * 0.95); // Less blue
+      
+      // Reduce contrast for soft look
+      data[i] = (data[i] - 128) * 0.8 + 128;
+      data[i + 1] = (data[i + 1] - 128) * 0.8 + 128;
+      data[i + 2] = (data[i + 2] - 128) * 0.8 + 128;
+    }
+  }
+
+  // NEW: Film Grain - Adds realistic film grain texture
+  applyFilmGrain(data, width, height) {
+    // First apply a vintage look
+    this.applyVintage(data);
+    
+    // Add grain overlay
+    const grainIntensity = 15;
+    for (let i = 0; i < data.length; i += 4) {
+      const grain = (Math.random() - 0.5) * grainIntensity;
+      
+      data[i] = Math.max(0, Math.min(255, data[i] + grain));
+      data[i + 1] = Math.max(0, Math.min(255, data[i + 1] + grain));
+      data[i + 2] = Math.max(0, Math.min(255, data[i + 2] + grain));
+    }
+  }
+
+  // NEW: Instagram - Modern social media filter
+  applyInstagram(data) {
+    for (let i = 0; i < data.length; i += 4) {
+      const r = data[i];
+      const g = data[i + 1];
+      const b = data[i + 2];
+      
+      // Boost saturation slightly
+      const max = Math.max(r, g, b);
+      const min = Math.min(r, g, b);
+      const saturation = max === 0 ? 0 : (max - min) / max;
+      
+      if (saturation < 0.7) {
+        data[i] = Math.min(255, r * 1.1);
+        data[i + 1] = Math.min(255, g * 1.1);
+        data[i + 2] = Math.min(255, b * 1.1);
+      }
+      
+      // Add slight vignette effect by darkening edges
+      const x = (i / 4) % width;
+      const y = Math.floor((i / 4) / width);
+      const centerX = width / 2;
+      const centerY = height / 2;
+      const distance = Math.sqrt(Math.pow(x - centerX, 2) + Math.pow(y - centerY, 2));
+      const maxDistance = Math.sqrt(Math.pow(centerX, 2) + Math.pow(centerY, 2));
+      const vignette = 1 - (distance / maxDistance) * 0.3;
+      
+      data[i] *= vignette;
+      data[i + 1] *= vignette;
+      data[i + 2] *= vignette;
+      
+      // Slight contrast boost
+      data[i] = (data[i] - 128) * 1.1 + 128;
+      data[i + 1] = (data[i + 1] - 128) * 1.1 + 128;
+      data[i + 2] = (data[i + 2] - 128) * 1.1 + 128;
+    }
+  }
+
+  // NEW: Lomo - Lomography effect with vignette and color shift
+  applyLomo(data) {
+    for (let i = 0; i < data.length; i += 4) {
+      const r = data[i];
+      const g = data[i + 1];
+      const b = data[i + 2];
+      
+      // Strong color saturation
+      data[i] = Math.min(255, r * 1.3); // Boost reds
+      data[i + 1] = Math.min(255, g * 1.1); // Moderate boost greens
+      data[i + 2] = Math.max(0, b * 0.9); // Reduce blues
+      
+      // Increase contrast dramatically
+      data[i] = (data[i] - 128) * 1.3 + 128;
+      data[i + 1] = (data[i + 1] - 128) * 1.3 + 128;
+      data[i + 2] = (data[i + 2] - 128) * 1.3 + 128;
+      
+      // Add cyan shift to shadows
+      if (data[i] < 128) data[i + 1] = Math.min(255, data[i + 1] * 1.1);
+      if (data[i] < 128) data[i + 2] = Math.min(255, data[i + 2] * 1.05);
+    }
+  }
+
+  // NEW: Cinematic - Movie-like look with teal and orange
+  applyCinematic(data) {
+    for (let i = 0; i < data.length; i += 4) {
+      const r = data[i];
+      const g = data[i + 1];
+      const b = data[i + 2];
+      
+      // Teal and orange color grading
+      // Reduce blues in shadows, boost in highlights
+      const luminance = (r + g + b) / 3;
+      
+      if (luminance > 160) {
+        // Highlights: warm orange
+        data[i] = Math.min(255, r * 1.15);
+        data[i + 1] = Math.min(255, g * 1.05);
+        data[i + 2] = Math.max(0, b * 0.9);
+      } else if (luminance < 96) {
+        // Shadows: cool teal
+        data[i] = Math.max(0, r * 0.9);
+        data[i + 1] = Math.min(255, g * 1.1);
+        data[i + 2] = Math.min(255, b * 1.05);
+      }
+      
+      // Reduce overall saturation slightly
+      const avg = (data[i] + data[i + 1] + data[i + 2]) / 3;
+      data[i] = avg * 0.2 + data[i] * 0.8;
+      data[i + 1] = avg * 0.2 + data[i + 1] * 0.8;
+      data[i + 2] = avg * 0.2 + data[i + 2] * 0.8;
+      
+      // Crush blacks
+      if (data[i] < 32) data[i] = 20;
+      if (data[i + 1] < 32) data[i + 1] = 20;
+      if (data[i + 2] < 32) data[i + 2] = 20;
+    }
+  }
+
+  // NEW: Faded - Desaturated, washed out retro look
+  applyFaded(data) {
+    for (let i = 0; i < data.length; i += 4) {
+      const r = data[i];
+      const g = data[i + 1];
+      const b = data[i + 2];
+      
+      // Strong desaturation
+      const avg = (r + g + b) / 3;
+      data[i] = avg * 0.6 + r * 0.4;
+      data[i + 1] = avg * 0.6 + g * 0.4;
+      data[i + 2] = avg * 0.6 + b * 0.4;
+      
+      // Lift blacks (make shadows brighter)
+      data[i] = Math.min(255, data[i] + 20);
+      data[i + 1] = Math.min(255, data[i + 1] + 20);
+      data[i + 2] = Math.min(255, data[i + 2] + 20);
+      
+      // Reduce contrast
+      data[i] = (data[i] - 128) * 0.7 + 128;
+      data[i + 1] = (data[i + 1] - 128) * 0.7 + 128;
+      data[i + 2] = (data[i + 2] - 128) * 0.7 + 128;
+      
+      // Add slight blue tint
+      data[i + 2] = Math.min(255, data[i + 2] * 1.05);
+    }
+  }
+
+  // NEW: Dramatic - High contrast, moody look
+  applyDramatic(data) {
+    for (let i = 0; i < data.length; i += 4) {
+      const r = data[i];
+      const g = data[i + 1];
+      const b = data[i + 2];
+      
+      // Convert to grayscale first
+      const avg = (r + g + b) / 3;
+      
+      // Apply S-curve for dramatic contrast
+      let newValue;
+      if (avg < 64) {
+        newValue = avg * 0.5; // Crush shadows
+      } else if (avg < 192) {
+        newValue = 64 + (avg - 64) * 1.2; // Boost midtones
+      } else {
+        newValue = 192 + (avg - 192) * 0.8; // Compress highlights
+      }
+      
+      // Keep some color but heavily muted
+      data[i] = newValue * 0.1 + r * 0.9;
+      data[i + 1] = newValue * 0.1 + g * 0.9;
+      data[i + 2] = newValue * 0.1 + b * 0.9;
+      
+      // Deepen shadows
+      if (data[i] < 64) data[i] *= 0.8;
+      if (data[i + 1] < 64) data[i + 1] *= 0.8;
+      if (data[i + 2] < 64) data[i + 2] *= 0.8;
+    }
+  }
+
+  // NEW: Urban - Cool, gritty city look
+  applyUrban(data) {
+    for (let i = 0; i < data.length; i += 4) {
+      const r = data[i];
+      const g = data[i + 1];
+      const b = data[i + 2];
+      
+      // Cool color temperature
+      data[i] = Math.max(0, r * 0.9); // Reduce reds
+      data[i + 1] = Math.min(255, g * 1.05); // Slight boost greens
+      data[i + 2] = Math.min(255, b * 1.1); // Boost blues
+      
+      // Increase clarity (local contrast)
+      const avg = (data[i] + data[i + 1] + data[i + 2]) / 3;
+      if (Math.abs(data[i] - avg) > 20) data[i] = (data[i] - avg) * 1.2 + avg;
+      if (Math.abs(data[i + 1] - avg) > 20) data[i + 1] = (data[i + 1] - avg) * 1.2 + avg;
+      if (Math.abs(data[i + 2] - avg) > 20) data[i + 2] = (data[i + 2] - avg) * 1.2 + avg;
+      
+      // Add slight grain for texture
+      const grain = (Math.random() - 0.5) * 8;
+      data[i] = Math.max(0, Math.min(255, data[i] + grain));
+      data[i + 1] = Math.max(0, Math.min(255, data[i + 1] + grain));
+      data[i + 2] = Math.max(0, Math.min(255, data[i + 2] + grain));
+    }
+  }
+
   loadImage(file) {
     const img = new Image();
     img.src = URL.createObjectURL(file);
@@ -1504,10 +1949,13 @@ class EXIFBorderApp {
       this.updateOrientationIndicator();
       
       EXIF.getData(img, () => {
+        const focalLength = EXIF.getTag(img, "FocalLength");
+        this.actualFocalLength = focalLength ? parseFloat(focalLength) : null;
+        
         this.exif = {
           make: EXIF.getTag(img, "Make"),
           model: EXIF.getTag(img, "Model"),
-          focal: EXIF.getTag(img, "FocalLength"),
+          focal: this.actualFocalLength,
           aperture: EXIF.getTag(img, "FNumber"),
           shutter: EXIF.getTag(img, "ExposureTime"),
           iso: EXIF.getTag(img, "ISOSpeedRatings")
@@ -1536,6 +1984,119 @@ class EXIFBorderApp {
       "1:1": 1,
       "1.91:1": 1.91
     }[this.instagramRatio];
+  }
+
+  // CORRECTED: Calculate focal length based on sensor mode
+  getDisplayFocalLength() {
+    if (!this.actualFocalLength) return null;
+    
+    // We're assuming the uploaded photo is from an APS-C camera (1.5x crop)
+    // The actual focal length in EXIF is what was used on the APS-C camera
+    
+    const actualFocalLength = this.actualFocalLength;
+    
+    switch(this.sensorMode) {
+      case 'fullframe':
+        // Convert APS-C to Full Frame equivalent: APS-C × 1.5 = Full Frame
+        const fullFrameEquivalent = actualFocalLength * 1.5;
+        return {
+          display: `${Math.round(fullFrameEquivalent)}mm`,
+          actual: actualFocalLength,
+          equivalent: fullFrameEquivalent,
+          conversion: 'APS-C → Full Frame (×1.5)'
+        };
+        
+      case 'aps-c':
+        // APS-C mode: Show actual focal length (no conversion)
+        return {
+          display: `${Math.round(actualFocalLength)}mm`,
+          actual: actualFocalLength,
+          equivalent: actualFocalLength,
+          conversion: 'APS-C actual'
+        };
+        
+      case 'mft':
+        // Convert APS-C to MFT equivalent:
+        // APS-C 50mm × 1.5 = 75mm FF equivalent
+        // MFT needs: 75mm ÷ 2.0 = 37.5mm MFT equivalent
+        // So conversion factor: 1.5 ÷ 2.0 = 0.75
+        const mftEquivalent = actualFocalLength * 0.75;
+        return {
+          display: `${Math.round(mftEquivalent)}mm`,
+          actual: actualFocalLength,
+          equivalent: mftEquivalent,
+          conversion: 'APS-C → MFT (×0.75)'
+        };
+        
+      case 'canon-crop':
+        // Convert APS-C (1.5x) to Canon APS-C (1.6x):
+        // APS-C 50mm × 1.5 = 75mm FF equivalent
+        // Canon APS-C needs: 75mm ÷ 1.6 = 46.875mm
+        // So conversion factor: 1.5 ÷ 1.6 = 0.9375
+        const canonEquivalent = actualFocalLength * 0.9375;
+        return {
+          display: `${Math.round(canonEquivalent)}mm`,
+          actual: actualFocalLength,
+          equivalent: canonEquivalent,
+          conversion: 'APS-C → Canon APS-C (×0.94)'
+        };
+        
+      default:
+        return {
+          display: `${Math.round(actualFocalLength)}mm`,
+          actual: actualFocalLength,
+          equivalent: actualFocalLength,
+          conversion: 'actual'
+        };
+    }
+  }
+
+  // FIXED: Get EXIF string with proper sensor mode logic
+  getExifString(separator) {
+    let exifString = "";
+    
+    if (this.actualFocalLength) {
+      const focalData = this.getDisplayFocalLength();
+      if (focalData) {
+        exifString += focalData.display + separator;
+      }
+    }
+    
+    if (this.exif.aperture) exifString += "f/" + this.exif.aperture + separator;
+    if (this.exif.shutter) {
+      if (this.exif.shutter < 1) {
+        exifString += "1/" + Math.round(1 / this.exif.shutter) + "s" + separator;
+      } else {
+        exifString += this.exif.shutter + "s" + separator;
+      }
+    }
+    if (this.exif.iso) exifString += "ISO" + this.exif.iso;
+    
+    const sepLength = separator.length;
+    if (exifString.endsWith(separator)) {
+      exifString = exifString.slice(0, -sepLength);
+    }
+    
+    return exifString.trim();
+  }
+
+  // NEW: Get camera text with model first, then brand
+  getCameraText() {
+    const model = this.exif.model || "";
+    const make = this.exif.make || "";
+    
+    // Clean up common model prefixes that duplicate the brand
+    const cleanedModel = model.replace(new RegExp(`^${make}\\s*`, 'i'), '').trim();
+    
+    if (cleanedModel && make) {
+      return `${cleanedModel} ${make}`;
+    } else if (cleanedModel) {
+      return cleanedModel;
+    } else if (make) {
+      return make;
+    } else {
+      return "Unknown Camera";
+    }
   }
 
   queueRender() {
@@ -1651,8 +2212,8 @@ class EXIFBorderApp {
     // IMPORTANT: Set text color BEFORE drawing text background
     ctx.fillStyle = this.textColorEl.value;
 
-    // Build camera text
-    const cameraText = `${[this.exif.make, this.exif.model].filter(Boolean).join(" ") || "Unknown Camera"}`;
+    // Build camera text - MODEL FIRST, THEN BRAND
+    const cameraText = this.getCameraText();
     
     // Calculate text positions
     const padding = 30 * scale;
@@ -1723,9 +2284,8 @@ class EXIFBorderApp {
   }
 
   drawTextBackground(ctx, contentX, contentY, imgW, imgH, titleY, metaY, titleSize, metaSize, scale, padding, cameraText) {
-    // INCREASED side padding for better spacing
-    const bgPaddingVertical = 15 * scale; // Vertical padding
-    const bgPaddingHorizontal = 25 * scale; // INCREASED: Horizontal padding (was 15)
+    const bgPaddingVertical = 15 * scale;
+    const bgPaddingHorizontal = 25 * scale;
     const cornerRadius = 8 * scale;
     
     // Set up font for measurement
@@ -1768,11 +2328,10 @@ class EXIFBorderApp {
     // Calculate background position
     let bgX, bgY, bgWidth, bgHeight;
     
-    // Use INCREASED horizontal padding on both sides
     bgWidth = textWidth + (bgPaddingHorizontal * 2);
     bgHeight = textHeight;
     
-    // Position horizontally based on textPosition with proper spacing
+    // Position horizontally based on textPosition
     switch(this.textPosition) {
       case 'bottom-left':
         bgX = contentX + padding;
@@ -1861,7 +2420,7 @@ class EXIFBorderApp {
         ctx.fillText(cameraText, startX + shotOnWidth, titleY);
       }
       
-      // Draw EXIF data
+      // Draw EXIF data with sensor mode consideration
       ctx.font = `400 ${metaSize}px "${fontFamily}", system-ui`;
       ctx.textAlign = "center";
       
@@ -1883,7 +2442,7 @@ class EXIFBorderApp {
       ctx.font = `700 ${titleSize}px "${fontFamily}", system-ui`;
       ctx.fillText(cameraText, textX + shotOnWidth, titleY);
       
-      // Draw EXIF data
+      // Draw EXIF data with sensor mode consideration
       ctx.font = `400 ${metaSize}px "${fontFamily}", system-ui`;
       
       let exifString = this.getExifString(" • ");
@@ -1913,7 +2472,7 @@ class EXIFBorderApp {
       ctx.font = `400 ${titleSize}px "${fontFamily}", system-ui`;
       ctx.fillText("Shot on ", textX - cameraWidth, titleY);
       
-      // Draw EXIF data
+      // Draw EXIF data with sensor mode consideration
       ctx.font = `400 ${metaSize}px "${fontFamily}", system-ui`;
       
       let exifString = this.getExifString(" • ");
@@ -2033,13 +2592,16 @@ class EXIFBorderApp {
       ctx.font = `700 ${titleSize}px "${fontFamily}", system-ui`;
       ctx.fillText(cameraText, centerX, titleY);
       
-      // EXIF data items vertically
+      // EXIF data items vertically with sensor mode consideration
       ctx.font = `400 ${metaSize}px "${fontFamily}", system-ui`;
       let yPos = titleY + verticalSpacing;
       
-      if (this.exif.focal) {
-        ctx.fillText(`${Math.round(this.exif.focal)}mm`, centerX, yPos);
-        yPos += verticalSpacing;
+      if (this.actualFocalLength) {
+        const focalData = this.getDisplayFocalLength();
+        if (focalData) {
+          ctx.fillText(focalData.display, centerX, yPos);
+          yPos += verticalSpacing;
+        }
       }
       if (this.exif.aperture) {
         ctx.fillText(`f/${this.exif.aperture}`, centerX, yPos);
@@ -2064,13 +2626,16 @@ class EXIFBorderApp {
       ctx.font = `700 ${titleSize}px "${fontFamily}", system-ui`;
       ctx.fillText(cameraText, textX, titleY);
       
-      // EXIF data items vertically
+      // EXIF data items vertically with sensor mode consideration
       ctx.font = `400 ${metaSize}px "${fontFamily}", system-ui`;
       let yPos = titleY + verticalSpacing;
       
-      if (this.exif.focal) {
-        ctx.fillText(`${Math.round(this.exif.focal)}mm`, textX, yPos);
-        yPos += verticalSpacing;
+      if (this.actualFocalLength) {
+        const focalData = this.getDisplayFocalLength();
+        if (focalData) {
+          ctx.fillText(focalData.display, textX, yPos);
+          yPos += verticalSpacing;
+        }
       }
       if (this.exif.aperture) {
         ctx.fillText(`f/${this.exif.aperture}`, textX, yPos);
@@ -2095,13 +2660,16 @@ class EXIFBorderApp {
       ctx.font = `700 ${titleSize}px "${fontFamily}", system-ui`;
       ctx.fillText(cameraText, maxTextX, titleY);
       
-      // EXIF data items vertically
+      // EXIF data items vertically with sensor mode consideration
       ctx.font = `400 ${metaSize}px "${fontFamily}", system-ui`;
       let yPos = titleY + verticalSpacing;
       
-      if (this.exif.focal) {
-        ctx.fillText(`${Math.round(this.exif.focal)}mm`, maxTextX, yPos);
-        yPos += verticalSpacing;
+      if (this.actualFocalLength) {
+        const focalData = this.getDisplayFocalLength();
+        if (focalData) {
+          ctx.fillText(focalData.display, maxTextX, yPos);
+          yPos += verticalSpacing;
+        }
       }
       if (this.exif.aperture) {
         ctx.fillText(`f/${this.exif.aperture}`, maxTextX, yPos);
@@ -2199,32 +2767,13 @@ class EXIFBorderApp {
     }
   }
 
-  getExifString(separator) {
-    let exifString = "";
-    if (this.exif.focal) exifString += Math.round(this.exif.focal) + "mm" + separator;
-    if (this.exif.aperture) exifString += "f/" + this.exif.aperture + separator;
-    if (this.exif.shutter) {
-      if (this.exif.shutter < 1) {
-        exifString += "1/" + Math.round(1 / this.exif.shutter) + "s" + separator;
-      } else {
-        exifString += this.exif.shutter + "s" + separator;
-      }
-    }
-    if (this.exif.iso) exifString += "ISO" + this.exif.iso;
-    
-    const sepLength = separator.length;
-    if (exifString.endsWith(separator)) {
-      exifString = exifString.slice(0, -sepLength);
-    }
-    
-    return exifString.trim();
-  }
-
   download() {
     this.render(this.exportCtx, this.exportCanvas, false);
     const a = document.createElement("a");
     const mode = this.instagramMode ? "instagram-" : "exif-border-";
-    a.download = `${mode}${new Date().getTime()}.jpg`;
+    const sensorMode = this.sensorMode !== 'fullframe' ? `${this.sensorMode}-` : '';
+    const filterMode = this.currentFilter !== 'none' ? `${this.currentFilter}-` : '';
+    a.download = `${filterMode}${sensorMode}${mode}${new Date().getTime()}.jpg`;
     a.href = this.exportCanvas.toDataURL("image/jpeg", 0.98);
     a.click();
   }
