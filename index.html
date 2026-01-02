@@ -417,6 +417,47 @@ select:hover {
   margin-bottom: 0.25rem;
 }
 
+/* Layout Options */
+.layout-options {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.layout-btn {
+  padding: 0.75rem 0.5rem;
+  background: var(--primary-light);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--transition);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.layout-btn:hover {
+  border-color: var(--accent);
+  transform: translateY(-1px);
+}
+
+.layout-btn.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: white;
+}
+
+.layout-icon {
+  font-size: 1.25rem;
+  margin-bottom: 0.25rem;
+}
+
 /* Canvas Preview */
 .preview-wrap {
   display: flex;
@@ -469,7 +510,7 @@ canvas {
 
 [data-theme="dark"] .download-btn {
   background: white;
-  color: #000000; /* Black text in dark mode */
+  color: #000000;
 }
 
 .download-btn:hover {
@@ -527,29 +568,18 @@ footer {
   margin-top: 0.25rem;
 }
 
-/* Offline Message */
-#offline-message {
-  position: fixed;
-  top: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: #f8d7da;
-  color: #721c24;
-  padding: 12px 24px;
-  border-radius: 8px;
-  border: 1px solid #f5c6cb;
-  z-index: 10000;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-  font-size: 14px;
+/* Color Contrast Warning */
+.contrast-warning {
+  font-size: 0.75rem;
+  color: #dc2626;
+  margin-top: 0.25rem;
   display: flex;
   align-items: center;
-  gap: 8px;
-  animation: slideIn 0.3s ease;
+  gap: 0.25rem;
 }
 
-@keyframes slideIn {
-  from { transform: translate(-50%, -100%); opacity: 0; }
-  to { transform: translate(-50%, 0); opacity: 1; }
+.contrast-warning.hidden {
+  display: none;
 }
 
 /* Responsive */
@@ -586,7 +616,8 @@ footer {
     max-width: 300px;
   }
   
-  .position-options {
+  .position-options,
+  .layout-options {
     grid-template-columns: repeat(3, 1fr);
   }
 }
@@ -601,16 +632,19 @@ footer {
     max-width: 100%;
   }
   
-  .position-options {
-    grid-template-columns: repeat(3, 1fr);
+  .position-options,
+  .layout-options {
+    grid-template-columns: repeat(2, 1fr);
   }
   
-  .position-btn {
+  .position-btn,
+  .layout-btn {
     padding: 0.5rem 0.25rem;
     font-size: 0.7rem;
   }
   
-  .position-icon {
+  .position-icon,
+  .layout-icon {
     font-size: 1rem;
   }
 }
@@ -639,6 +673,65 @@ footer {
   </div>
 
   <div class="controls-grid">
+    <!-- Borderless Mode -->
+    <div class="control-group">
+      <div class="control-label">
+        <div class="toggle-label">
+          <span>Borderless Mode</span>
+        </div>
+        <div class="toggle-switch" id="borderlessToggle"></div>
+      </div>
+      <div style="font-size: 0.75rem; color: var(--text-secondary);">Place EXIF text inside photo without borders</div>
+    </div>
+
+    <!-- Text Position Control -->
+    <div class="control-group">
+      <div class="control-label">
+        <span>Text Position</span>
+        <span class="control-value" id="textPositionValue">Bottom Center</span>
+      </div>
+      <div class="position-options">
+        <button class="position-btn" data-position="bottom-left">
+          <span class="position-icon">↙️</span>
+          <span>Bottom Left</span>
+        </button>
+        <button class="position-btn active" data-position="bottom-center">
+          <span class="position-icon">⬇️</span>
+          <span>Bottom Center</span>
+        </button>
+        <button class="position-btn" data-position="bottom-right">
+          <span class="position-icon">↘️</span>
+          <span>Bottom Right</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Layout Options -->
+    <div class="control-group">
+      <div class="control-label">
+        <span>EXIF Layout</span>
+        <span class="control-value" id="layoutValue">Classic</span>
+      </div>
+      <div class="layout-options">
+        <button class="layout-btn active" data-layout="classic">
+          <span class="layout-icon">📄</span>
+          <span>Classic</span>
+        </button>
+        <button class="layout-btn" data-layout="compact">
+          <span class="layout-icon">📊</span>
+          <span>Compact</span>
+        </button>
+        <button class="layout-btn" data-layout="minimal">
+          <span class="layout-icon">🎯</span>
+          <span>Minimal</span>
+        </button>
+        <button class="layout-btn" data-layout="vertical">
+          <span class="layout-icon">📐</span>
+          <span>Vertical</span>
+        </button>
+      </div>
+    </div>
+
     <!-- Instagram Size Control -->
     <div class="control-group">
       <div class="control-label">
@@ -686,22 +779,26 @@ footer {
       <div style="font-size: 0.75rem; color: var(--text-secondary);">Toggle to show/hide camera settings</div>
     </div>
 
-    <!-- NEW: Text Position Control -->
+    <!-- Text Background Opacity -->
     <div class="control-group">
       <div class="control-label">
-        <span>Text Position</span>
-        <span class="control-value" id="textPositionValue">Bottom Center</span>
+        <span>Text Background Opacity</span>
+        <span class="control-value" id="textBgOpacityValue">0%</span>
       </div>
-      <div class="position-options">
-        <button class="position-btn" data-position="bottom-left">
-          <span>Bottom Left</span>
-        </button>
-        <button class="position-btn active" data-position="bottom-center">
-          <span>Bottom Center</span>
-        </button>
-        <button class="position-btn" data-position="bottom-right">
-          <span>Bottom Right</span>
-        </button>
+      <input type="range" id="textBgOpacity" min="0" max="100" step="5" value="0">
+      <div style="font-size: 0.75rem; color: var(--text-secondary);">Opacity of the background behind text</div>
+    </div>
+
+    <!-- NEW: Text Background Color -->
+    <div class="control-group">
+      <div class="control-label">
+        <span>Text Background Color</span>
+        <span class="control-value" id="textBgColorValue">#FFFFFF</span>
+      </div>
+      <input type="color" id="textBgColor" value="#ffffff">
+      <div class="contrast-warning hidden" id="contrastWarning">
+        <span>⚠️</span>
+        <span>Low contrast with text color</span>
       </div>
     </div>
 
@@ -759,6 +856,10 @@ footer {
         <span class="control-value" id="textColorValue">#111111</span>
       </div>
       <input type="color" id="textColor" value="#111111">
+      <div class="contrast-warning hidden" id="textContrastWarning">
+        <span>⚠️</span>
+        <span>Low contrast with background</span>
+      </div>
     </div>
   </div>
 
@@ -775,8 +876,8 @@ footer {
 </div>
 
 <footer>
-  <p>• EXIF Border Generator • Add professional camera metadata borders to your photos</p>
-  <p style="font-size: 0.75rem; margin-top: 0.5rem;">• WebApp • Leo Bruno •</p>
+  <p>EXIF Border Generator • Add professional camera metadata borders to your photos</p>
+  <p style="font-size: 0.75rem; margin-top: 0.5rem;">Works offline • Install as app</p>
 </footer>
 
 </div>
@@ -789,15 +890,20 @@ class EXIFBorderApp {
     this.bindControls();
     this.initTheme();
     this.initOfflineStorage();
-    this.checkOfflineStatus();
     this.updateControlValues();
     this.updateFontPreview();
     this.initServiceWorker();
+    this.checkContrast();
     
-    // Auto-save settings when controls change
+    // Performance optimizations
+    this.renderQueued = false;
+    this.renderThrottle = 16; // ~60fps
+    
+    // Auto-save settings
     const saveDebounce = this.debounce(() => this.saveSettings(), 1000);
     [this.fontScaleEl, this.lineSpacingEl, this.borderSizeEl, 
-     this.borderColorEl, this.textColorEl, this.fontFamilyEl]
+     this.borderColorEl, this.textColorEl, this.fontFamilyEl,
+     this.textBgOpacityEl, this.textBgColorEl]
       .forEach(el => el.addEventListener('input', saveDebounce));
   }
 
@@ -816,7 +922,10 @@ class EXIFBorderApp {
   initElements() {
     // Canvas elements
     this.previewCanvas = document.getElementById("previewCanvas");
-    this.previewCtx = this.previewCanvas.getContext("2d");
+    this.previewCtx = this.previewCanvas.getContext("2d", {
+      alpha: true,
+      desynchronized: true
+    });
     this.canvasContainer = document.getElementById("canvasContainer");
     
     // Control elements
@@ -825,14 +934,27 @@ class EXIFBorderApp {
     this.filterValue = document.getElementById("filterValue");
     this.filterButtons = document.querySelectorAll('.filter-btn');
     
-    // NEW: Position elements
+    // Borderless toggle
+    this.borderlessToggle = document.getElementById("borderlessToggle");
+    
+    // Position elements
     this.textPositionValue = document.getElementById("textPositionValue");
     this.positionButtons = document.querySelectorAll('.position-btn');
+    
+    // Layout elements
+    this.layoutValue = document.getElementById("layoutValue");
+    this.layoutButtons = document.querySelectorAll('.layout-btn');
     
     // Instagram controls
     this.instagramToggle = document.getElementById("instagramToggle");
     this.instagramRatioEl = document.getElementById("instagramRatio");
     this.instagramRatioValue = document.getElementById("instagramRatioValue");
+    
+    // Text background controls
+    this.textBgOpacityEl = document.getElementById("textBgOpacity");
+    this.textBgOpacityValue = document.getElementById("textBgOpacityValue");
+    this.textBgColorEl = document.getElementById("textBgColor");
+    this.textBgColorValue = document.getElementById("textBgColorValue");
     
     // Export canvas
     this.exportCanvas = document.createElement("canvas");
@@ -851,6 +973,10 @@ class EXIFBorderApp {
     this.borderColorEl = document.getElementById("borderColor");
     this.textColorEl = document.getElementById("textColor");
     
+    // Contrast warnings
+    this.contrastWarning = document.getElementById("contrastWarning");
+    this.textContrastWarning = document.getElementById("textContrastWarning");
+    
     // Value display elements
     this.fontPreview = document.getElementById("fontPreview");
     this.fontFamilyValue = document.getElementById("fontFamilyValue");
@@ -864,28 +990,32 @@ class EXIFBorderApp {
     this.image = null;
     this.filteredImage = null;
     this.exif = null;
-    this.renderQueued = false;
     this.isPortrait = false;
     this.showExif = true;
     this.currentFilter = 'none';
     this.instagramMode = false;
     this.instagramRatio = "4:5";
-    this.textPosition = 'bottom-center'; // NEW: Default position
+    this.textPosition = 'bottom-center';
+    this.borderlessMode = false;
+    this.layout = 'classic';
+    this.textBgOpacity = 0;
+    this.textBgColor = "#ffffff";
   }
 
   initOfflineStorage() {
-    // Store app settings locally
     if (!localStorage.getItem('exifBorderSettings')) {
       localStorage.setItem('exifBorderSettings', JSON.stringify({
         theme: 'light',
         fontSize: 1.0,
         borderSize: 0.04,
-        textPosition: 'bottom-center', // NEW: Save position
-        lastImage: null
+        textPosition: 'bottom-center',
+        borderlessMode: false,
+        layout: 'classic',
+        textBgOpacity: 0,
+        textBgColor: "#ffffff"
       }));
     }
     
-    // Load saved settings
     try {
       const settings = JSON.parse(localStorage.getItem('exifBorderSettings'));
       if (settings.theme) {
@@ -894,6 +1024,18 @@ class EXIFBorderApp {
       }
       if (settings.textPosition) {
         this.setPosition(settings.textPosition);
+      }
+      if (settings.borderlessMode !== undefined) {
+        this.setBorderlessMode(settings.borderlessMode);
+      }
+      if (settings.layout) {
+        this.setLayout(settings.layout);
+      }
+      if (settings.textBgOpacity !== undefined) {
+        this.setTextBgOpacity(settings.textBgOpacity);
+      }
+      if (settings.textBgColor) {
+        this.setTextBgColor(settings.textBgColor);
       }
     } catch (e) {
       console.log('No saved settings found');
@@ -910,17 +1052,71 @@ class EXIFBorderApp {
       fontFamily: this.fontFamilyEl.value,
       showExif: this.showExif,
       instagramMode: this.instagramMode,
-      textPosition: this.textPosition, // NEW: Save position
+      textPosition: this.textPosition,
+      borderlessMode: this.borderlessMode,
+      layout: this.layout,
+      textBgOpacity: this.textBgOpacity,
+      textBgColor: this.textBgColor,
       lastUpdated: new Date().toISOString()
     };
     
     localStorage.setItem('exifBorderSettings', JSON.stringify(settings));
   }
 
+  setBorderlessMode(enabled) {
+    this.borderlessMode = enabled;
+    this.borderlessToggle.classList.toggle("active", enabled);
+    
+    this.borderSizeEl.disabled = enabled;
+    this.borderColorEl.disabled = enabled;
+    
+    this.queueRender();
+    this.saveSettings();
+  }
+
+  setLayout(layout) {
+    this.layout = layout;
+    
+    this.layoutButtons.forEach(btn => {
+      btn.classList.remove('active');
+      if (btn.dataset.layout === layout) {
+        btn.classList.add('active');
+      }
+    });
+    
+    const layoutNames = {
+      'classic': 'Classic',
+      'compact': 'Compact',
+      'minimal': 'Minimal',
+      'vertical': 'Vertical'
+    };
+    this.layoutValue.textContent = layoutNames[layout] || layout;
+    
+    this.queueRender();
+    this.saveSettings();
+  }
+
+  setTextBgOpacity(value) {
+    this.textBgOpacity = parseInt(value);
+    this.textBgOpacityValue.textContent = `${this.textBgOpacity}%`;
+    this.textBgOpacityEl.value = value;
+    this.checkContrast();
+    this.queueRender();
+    this.saveSettings();
+  }
+
+  setTextBgColor(color) {
+    this.textBgColor = color;
+    this.textBgColorEl.value = color;
+    this.textBgColorValue.textContent = color.toUpperCase();
+    this.checkContrast();
+    this.queueRender();
+    this.saveSettings();
+  }
+
   setPosition(position) {
     this.textPosition = position;
     
-    // Update active button
     this.positionButtons.forEach(btn => {
       btn.classList.remove('active');
       if (btn.dataset.position === position) {
@@ -928,7 +1124,6 @@ class EXIFBorderApp {
       }
     });
     
-    // Update display value
     const positionNames = {
       'bottom-left': 'Bottom Left',
       'bottom-center': 'Bottom Center',
@@ -940,75 +1135,57 @@ class EXIFBorderApp {
     this.saveSettings();
   }
 
-  checkOfflineStatus() {
-    if (!navigator.onLine) {
-      this.showOfflineMessage();
+  // Check contrast between text color and background color
+  checkContrast() {
+    const textColor = this.textColorEl.value;
+    const bgColor = this.textBgColor;
+    const opacity = this.textBgOpacity / 100;
+    
+    // Only show warning if background opacity is high enough
+    if (opacity < 0.3) {
+      this.contrastWarning.classList.add('hidden');
+      this.textContrastWarning.classList.add('hidden');
+      return;
     }
     
-    window.addEventListener('online', () => {
-      this.hideOfflineMessage();
-      console.log('App is back online');
-    });
+    // Convert hex to RGB
+    const textRgb = this.hexToRgb(textColor);
+    const bgRgb = this.hexToRgb(bgColor);
     
-    window.addEventListener('offline', () => {
-      this.showOfflineMessage();
-      console.log('App is offline');
-    });
-  }
-
-  showOfflineMessage() {
-    // Remove existing message if any
-    const existingMsg = document.getElementById('offline-message');
-    if (existingMsg) existingMsg.remove();
+    // Calculate relative luminance
+    const textLum = this.getRelativeLuminance(textRgb);
+    const bgLum = this.getRelativeLuminance(bgRgb);
     
-    const msg = document.createElement('div');
-    msg.id = 'offline-message';
-    msg.innerHTML = `
-      <div style="
-        position: fixed;
-        top: 20px;
-        left: 50%;
-        transform: translateX(-50%);
-        background: #f8d7da;
-        color: #721c24;
-        padding: 12px 24px;
-        border-radius: 8px;
-        border: 1px solid #f5c6cb;
-        z-index: 10000;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        font-size: 14px;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-      ">
-        <span>⚠️</span>
-        <span>You're offline. App is running in offline mode.</span>
-      </div>
-    `;
+    // Calculate contrast ratio
+    const contrast = textLum > bgLum 
+      ? (textLum + 0.05) / (bgLum + 0.05)
+      : (bgLum + 0.05) / (textLum + 0.05);
     
-    document.body.appendChild(msg);
-    
-    // Auto-remove after 5 seconds
-    setTimeout(() => {
-      if (msg.parentNode) {
-        msg.remove();
-      }
-    }, 5000);
-  }
-
-  hideOfflineMessage() {
-    const msg = document.getElementById('offline-message');
-    if (msg) {
-      msg.style.background = '#d4edda';
-      msg.style.color = '#155724';
-      msg.style.borderColor = '#c3e6cb';
-      msg.innerHTML = `
-        <span>✓</span>
-        <span>Back online! Changes will sync automatically.</span>
-      `;
-      
-      setTimeout(() => msg.remove(), 3000);
+    // Show warning if contrast is too low (WCAG AA minimum is 4.5:1)
+    if (contrast < 2.5) {
+      this.contrastWarning.classList.remove('hidden');
+      this.textContrastWarning.classList.remove('hidden');
+    } else {
+      this.contrastWarning.classList.add('hidden');
+      this.textContrastWarning.classList.add('hidden');
     }
+  }
+
+  hexToRgb(hex) {
+    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    return result ? {
+      r: parseInt(result[1], 16),
+      g: parseInt(result[2], 16),
+      b: parseInt(result[3], 16)
+    } : { r: 0, g: 0, b: 0 };
+  }
+
+  getRelativeLuminance(rgb) {
+    const sRGB = [rgb.r / 255, rgb.g / 255, rgb.b / 255];
+    const adjusted = sRGB.map(c => {
+      return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+    });
+    return 0.2126 * adjusted[0] + 0.7152 * adjusted[1] + 0.0722 * adjusted[2];
   }
 
   initTheme() {
@@ -1016,7 +1193,6 @@ class EXIFBorderApp {
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
     const savedTheme = localStorage.getItem('theme');
     
-    // Set initial theme
     if (savedTheme) {
       document.body.dataset.theme = savedTheme;
     } else if (prefersDark) {
@@ -1075,6 +1251,11 @@ class EXIFBorderApp {
       this.saveSettings();
     };
 
+    // Borderless toggle
+    this.borderlessToggle.onclick = () => {
+      this.setBorderlessMode(!this.borderlessMode);
+    };
+
     // Instagram toggle
     this.instagramToggle.onclick = () => {
       this.instagramMode = !this.instagramMode;
@@ -1108,13 +1289,31 @@ class EXIFBorderApp {
       };
     });
 
-    // NEW: Position buttons
+    // Position buttons
     this.positionButtons.forEach(btn => {
       btn.onclick = (e) => {
         const position = e.currentTarget.dataset.position;
         this.setPosition(position);
       };
     });
+
+    // Layout buttons
+    this.layoutButtons.forEach(btn => {
+      btn.onclick = (e) => {
+        const layout = e.currentTarget.dataset.layout;
+        this.setLayout(layout);
+      };
+    });
+
+    // Text background opacity
+    this.textBgOpacityEl.oninput = () => {
+      this.setTextBgOpacity(this.textBgOpacityEl.value);
+    };
+
+    // Text background color
+    this.textBgColorEl.oninput = () => {
+      this.setTextBgColor(this.textBgColorEl.value);
+    };
 
     // Update font preview when font changes
     this.fontFamilyEl.onchange = () => {
@@ -1129,6 +1328,7 @@ class EXIFBorderApp {
       .forEach(el => {
         el.oninput = () => {
           this.updateControlValues();
+          this.checkContrast();
           this.queueRender();
           this.saveSettings();
         };
@@ -1156,7 +1356,6 @@ class EXIFBorderApp {
     this.currentFilter = filter;
     this.filterValue.textContent = this.getFilterName(filter);
     
-    // Update active button
     this.filterButtons.forEach(btn => {
       btn.classList.remove('active');
       if (btn.dataset.filter === filter) {
@@ -1262,11 +1461,6 @@ class EXIFBorderApp {
       data[i] = Math.min(255, data[i] * 1.1);
       data[i + 1] = Math.min(255, data[i + 1] * 0.9);
       data[i + 2] = Math.min(255, data[i + 2] * 0.8);
-      
-      const contrast = 0.9;
-      data[i] = ((data[i] - 128) * contrast) + 128;
-      data[i + 1] = ((data[i + 1] - 128) * contrast) + 128;
-      data[i + 2] = ((data[i + 2] - 128) * contrast) + 128;
     }
   }
 
@@ -1373,7 +1567,7 @@ class EXIFBorderApp {
     const imgW = this.image.width * scale;
     const imgH = this.image.height * scale;
 
-    const borderRatio = +this.borderSizeEl.value;
+    const borderRatio = this.borderlessMode ? 0 : +this.borderSizeEl.value;
     
     // Calculate borders
     let side, top, bottom;
@@ -1424,12 +1618,25 @@ class EXIFBorderApp {
       }
     }
 
+    // For borderless mode, adjust to fit image only
+    if (this.borderlessMode) {
+      canvasW = imgW;
+      canvasH = imgH;
+      contentX = 0;
+      contentY = 0;
+      side = 0;
+      top = 0;
+      bottom = 0;
+    }
+
     canvas.width = canvasW;
     canvas.height = canvasH;
 
-    // Fill background
-    ctx.fillStyle = this.borderColorEl.value;
-    ctx.fillRect(0, 0, canvasW, canvasH);
+    // Fill background (only if not borderless mode)
+    if (!this.borderlessMode) {
+      ctx.fillStyle = this.borderColorEl.value;
+      ctx.fillRect(0, 0, canvasW, canvasH);
+    }
 
     // Draw the image
     ctx.drawImage(imageToDraw, contentX, contentY, imgW, imgH);
@@ -1440,211 +1647,577 @@ class EXIFBorderApp {
     const lineSpacing = +this.lineSpacingEl.value;
 
     ctx.textBaseline = "middle";
+    
+    // IMPORTANT: Set text color BEFORE drawing text background
     ctx.fillStyle = this.textColorEl.value;
 
-    // Calculate text positions
-    const textAreaTop = contentY + imgH;
-    const textAreaHeight = bottom;
-    
     // Build camera text
     const cameraText = `${[this.exif.make, this.exif.model].filter(Boolean).join(" ") || "Unknown Camera"}`;
     
-    if (this.showExif) {
-      // Calculate Y positions
-      const titleY = textAreaTop + (textAreaHeight * 0.35);
-      const metaY = titleY + (titleSize * lineSpacing * 0.8);
-      
-      if (this.textPosition === 'bottom-center') {
-        // CENTER ALIGNMENT
-        ctx.textAlign = "center";
-        
-        // Draw "Shot on Camera Brand" as a single line (center alignment)
-        ctx.font = `400 ${titleSize}px "${fontFamily}", system-ui`;
-        const shotOnWidth = ctx.measureText("Shot on ").width;
-        const cameraWidth = ctx.measureText(cameraText).width;
-        
-        // Calculate total width and starting position
-        const totalWidth = shotOnWidth + cameraWidth;
-        const startX = contentX + (imgW / 2) - (totalWidth / 2);
-        
-        // Draw "Shot on" (regular weight)
-        ctx.textAlign = "left";
-        ctx.fillText("Shot on ", startX, titleY);
-        
-        // Draw camera brand/model (bold weight)
-        ctx.font = `700 ${titleSize}px "${fontFamily}", system-ui`;
-        ctx.fillText(cameraText, startX + shotOnWidth, titleY);
-        
-        // Draw EXIF data - centered
-        ctx.font = `400 ${metaSize}px "${fontFamily}", system-ui`;
-        ctx.textAlign = "center";
-        
-        // Build EXIF string
-        let exifString = "";
-        if (this.exif.focal) exifString += Math.round(this.exif.focal) + "mm  ";
-        if (this.exif.aperture) exifString += "f/" + this.exif.aperture + "  ";
-        if (this.exif.shutter) {
-          if (this.exif.shutter < 1) {
-            exifString += "1/" + Math.round(1 / this.exif.shutter) + "s  ";
-          } else {
-            exifString += this.exif.shutter + "s  ";
-          }
+    // Calculate text positions
+    const padding = 30 * scale;
+    let titleY, metaY;
+    
+    if (this.borderlessMode) {
+      // Borderless mode: Place text inside image with proper margins
+      let textHeight = 0;
+      if (this.showExif) {
+        if (this.layout === 'vertical') {
+          textHeight = titleSize * 2.5 + metaSize * 4 + padding * 2;
+        } else {
+          textHeight = titleSize * 1.5 + metaSize + padding * 1.5;
         }
-        if (this.exif.iso) exifString += "ISO" + this.exif.iso;
-        
-        // Draw EXIF data
-        if (exifString.trim()) {
-          ctx.fillText(exifString.trim(), contentX + (imgW / 2), metaY);
-        }
-        
-      } else if (this.textPosition === 'bottom-left') {
-        // LEFT ALIGNMENT
-        const padding = 20;
-        const textX = contentX + padding;
-        
-        ctx.textAlign = "left";
-        
-        // Draw "Shot on Camera Brand" as a single line
-        ctx.font = `400 ${titleSize}px "${fontFamily}", system-ui`;
-        ctx.fillText("Shot on ", textX, titleY);
-        
-        // Measure "Shot on " width
-        const shotOnWidth = ctx.measureText("Shot on ").width;
-        
-        // Draw camera brand/model (bold weight)
-        ctx.font = `700 ${titleSize}px "${fontFamily}", system-ui`;
-        ctx.fillText(cameraText, textX + shotOnWidth, titleY);
-        
-        // Draw EXIF data
-        ctx.font = `400 ${metaSize}px "${fontFamily}", system-ui`;
-        
-        // Build EXIF string
-        let exifString = "";
-        if (this.exif.focal) exifString += Math.round(this.exif.focal) + "mm  ";
-        if (this.exif.aperture) exifString += "f/" + this.exif.aperture + "  ";
-        if (this.exif.shutter) {
-          if (this.exif.shutter < 1) {
-            exifString += "1/" + Math.round(1 / this.exif.shutter) + "s  ";
-          } else {
-            exifString += this.exif.shutter + "s  ";
-          }
-        }
-        if (this.exif.iso) exifString += "ISO" + this.exif.iso;
-        
-        // Draw EXIF data
-        if (exifString.trim()) {
-          ctx.fillText(exifString.trim(), textX, metaY);
-        }
-        
-      } else if (this.textPosition === 'bottom-right') {
-        // RIGHT ALIGNMENT - FIXED
-        const padding = 20;
-        const maxTextX = contentX + imgW - padding;
-        
-        ctx.textAlign = "right";
-        
-        // First, measure the total width of "Shot on Camera Brand"
-        ctx.font = `400 ${titleSize}px "${fontFamily}", system-ui`;
-        const shotOnWidth = ctx.measureText("Shot on ").width;
-        
-        ctx.font = `700 ${titleSize}px "${fontFamily}", system-ui`;
-        const cameraWidth = ctx.measureText(cameraText).width;
-        
-        const totalWidth = shotOnWidth + cameraWidth;
-        const textX = maxTextX;
-        
-        // Draw camera brand/model first (right-aligned)
-        ctx.font = `700 ${titleSize}px "${fontFamily}", system-ui`;
-        ctx.fillText(cameraText, textX, titleY);
-        
-        // Then draw "Shot on " to the left of camera text
-        ctx.font = `400 ${titleSize}px "${fontFamily}", system-ui`;
-        ctx.fillText("Shot on ", textX - cameraWidth, titleY);
-        
-        // Draw EXIF data
-        ctx.font = `400 ${metaSize}px "${fontFamily}", system-ui`;
-        
-        // Build EXIF string
-        let exifString = "";
-        if (this.exif.focal) exifString += Math.round(this.exif.focal) + "mm  ";
-        if (this.exif.aperture) exifString += "f/" + this.exif.aperture + "  ";
-        if (this.exif.shutter) {
-          if (this.exif.shutter < 1) {
-            exifString += "1/" + Math.round(1 / this.exif.shutter) + "s  ";
-          } else {
-            exifString += this.exif.shutter + "s  ";
-          }
-        }
-        if (this.exif.iso) exifString += "ISO" + this.exif.iso;
-        
-        // Draw EXIF data (right-aligned)
-        if (exifString.trim()) {
-          ctx.fillText(exifString.trim(), textX, metaY);
-        }
+      } else {
+        textHeight = titleSize * 1.2 + padding * 1.5;
       }
       
+      // Ensure text stays within image bounds
+      const maxBottomY = contentY + imgH - padding;
+      const minTopY = contentY + padding;
+      
+      // Position text from bottom with padding
+      titleY = maxBottomY - (textHeight * 0.6);
+      metaY = titleY + (titleSize * lineSpacing * 0.8);
+      
+      // Make sure text doesn't go above image
+      if (titleY < minTopY) {
+        titleY = minTopY + titleSize;
+        metaY = titleY + (titleSize * lineSpacing * 0.8);
+      }
+    } else {
+      // Normal border mode
+      const textAreaTop = contentY + imgH;
+      const textAreaHeight = bottom;
+      titleY = textAreaTop + (textAreaHeight * 0.35);
+      metaY = titleY + (titleSize * lineSpacing * 0.8);
+    }
+    
+    // Draw text background if opacity > 0
+    if (this.textBgOpacity > 0 && this.showExif) {
+      this.drawTextBackground(ctx, contentX, contentY, imgW, imgH, titleY, metaY, titleSize, metaSize, scale, padding, cameraText);
+    }
+    
+    // Reset text color to ensure it's visible
+    ctx.fillStyle = this.textColorEl.value;
+    
+    if (this.showExif) {
+      // Render based on selected layout
+      switch(this.layout) {
+        case 'classic':
+          this.renderClassicLayout(ctx, contentX, imgW, titleY, metaY, titleSize, metaSize, fontFamily, lineSpacing, cameraText, padding);
+          break;
+        case 'compact':
+          this.renderCompactLayout(ctx, contentX, imgW, titleY, metaY, titleSize, metaSize, fontFamily, lineSpacing, cameraText, padding);
+          break;
+        case 'minimal':
+          this.renderMinimalLayout(ctx, contentX, imgW, titleY, metaY, titleSize, metaSize, fontFamily, lineSpacing, cameraText, padding);
+          break;
+        case 'vertical':
+          this.renderVerticalLayout(ctx, contentX, imgW, titleY, metaY, titleSize, metaSize, fontFamily, lineSpacing, cameraText, padding);
+          break;
+      }
     } else {
       // When hiding EXIF
-      const titleY = textAreaTop + (textAreaHeight / 2);
+      this.renderNoExifLayout(ctx, contentX, imgW, titleY, titleSize, fontFamily, cameraText, padding);
+    }
+  }
+
+  drawTextBackground(ctx, contentX, contentY, imgW, imgH, titleY, metaY, titleSize, metaSize, scale, padding, cameraText) {
+    // INCREASED side padding for better spacing
+    const bgPaddingVertical = 15 * scale; // Vertical padding
+    const bgPaddingHorizontal = 25 * scale; // INCREASED: Horizontal padding (was 15)
+    const cornerRadius = 8 * scale;
+    
+    // Set up font for measurement
+    const fontFamily = this.fontFamilyEl.value.split(" (")[0];
+    ctx.font = `400 ${titleSize}px "${fontFamily}", system-ui`;
+    
+    let textWidth = 0;
+    let textHeight = 0;
+    
+    // Calculate text dimensions based on layout
+    if (this.layout === 'compact') {
+      let exifString = this.getExifString(" ");
+      let combinedText = `Shot on ${cameraText}`;
+      if (exifString.trim()) {
+        combinedText += ` • ${exifString.trim()}`;
+      }
+      textWidth = ctx.measureText(combinedText).width;
+      textHeight = titleSize + bgPaddingVertical * 2;
+    } else if (this.layout === 'minimal') {
+      ctx.font = `700 ${titleSize}px "${fontFamily}", system-ui`;
+      textWidth = ctx.measureText(cameraText).width;
+      textHeight = titleSize + metaSize + bgPaddingVertical * 2;
+    } else if (this.layout === 'vertical') {
+      // For vertical layout, use estimated width
+      textWidth = Math.min(200 * scale, imgW - padding * 2);
+      textHeight = titleSize * 2.5 + metaSize * 4 + bgPaddingVertical * 2;
+    } else { // classic
+      // Measure "Shot on " + camera text
+      ctx.font = `400 ${titleSize}px "${fontFamily}", system-ui`;
+      const shotOnWidth = ctx.measureText("Shot on ").width;
+      ctx.font = `700 ${titleSize}px "${fontFamily}", system-ui`;
+      const cameraWidth = ctx.measureText(cameraText).width;
+      textWidth = shotOnWidth + cameraWidth;
+      textHeight = titleSize * 1.5 + metaSize + bgPaddingVertical * 2;
+    }
+    
+    // Ensure text doesn't exceed image width
+    textWidth = Math.min(textWidth, imgW - padding * 2);
+    
+    // Calculate background position
+    let bgX, bgY, bgWidth, bgHeight;
+    
+    // Use INCREASED horizontal padding on both sides
+    bgWidth = textWidth + (bgPaddingHorizontal * 2);
+    bgHeight = textHeight;
+    
+    // Position horizontally based on textPosition with proper spacing
+    switch(this.textPosition) {
+      case 'bottom-left':
+        bgX = contentX + padding;
+        break;
+      case 'bottom-right':
+        bgX = contentX + imgW - bgWidth - padding;
+        break;
+      default: // center
+        bgX = contentX + (imgW - bgWidth) / 2;
+        break;
+    }
+    
+    // Position vertically - align with text
+    bgY = titleY - titleSize * 0.6 - bgPaddingVertical;
+    
+    // Ensure background stays within bounds for borderless mode
+    if (this.borderlessMode) {
+      if (bgY < contentY) {
+        bgY = contentY + 5;
+      }
+      if (bgY + bgHeight > contentY + imgH) {
+        bgY = contentY + imgH - bgHeight - 5;
+      }
+    }
+    
+    // Draw rounded rectangle background with custom color and opacity
+    const rgb = this.hexToRgb(this.textBgColor);
+    ctx.fillStyle = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${this.textBgOpacity / 100})`;
+    
+    // Draw rounded rectangle
+    ctx.beginPath();
+    ctx.moveTo(bgX + cornerRadius, bgY);
+    ctx.lineTo(bgX + bgWidth - cornerRadius, bgY);
+    ctx.quadraticCurveTo(bgX + bgWidth, bgY, bgX + bgWidth, bgY + cornerRadius);
+    ctx.lineTo(bgX + bgWidth, bgY + bgHeight - cornerRadius);
+    ctx.quadraticCurveTo(bgX + bgWidth, bgY + bgHeight, bgX + bgWidth - cornerRadius, bgY + bgHeight);
+    ctx.lineTo(bgX + cornerRadius, bgY + bgHeight);
+    ctx.quadraticCurveTo(bgX, bgY + bgHeight, bgX, bgY + bgHeight - cornerRadius);
+    ctx.lineTo(bgX, bgY + cornerRadius);
+    ctx.quadraticCurveTo(bgX, bgY, bgX + cornerRadius, bgY);
+    ctx.closePath();
+    ctx.fill();
+  }
+
+  renderClassicLayout(ctx, contentX, imgW, titleY, metaY, titleSize, metaSize, fontFamily, lineSpacing, cameraText, padding) {
+    // Ensure text color is set
+    ctx.fillStyle = this.textColorEl.value;
+    
+    if (this.textPosition === 'bottom-center') {
+      ctx.textAlign = "center";
       
-      if (this.textPosition === 'bottom-center') {
-        // Center alignment
-        ctx.textAlign = "center";
+      ctx.font = `400 ${titleSize}px "${fontFamily}", system-ui`;
+      const shotOnWidth = ctx.measureText("Shot on ").width;
+      const cameraWidth = ctx.measureText(cameraText).width;
+      
+      const totalWidth = shotOnWidth + cameraWidth;
+      const maxWidth = imgW - padding * 2;
+      
+      if (totalWidth > maxWidth) {
+        const scaleFactor = maxWidth / totalWidth;
+        const adjustedTitleSize = titleSize * Math.min(scaleFactor, 1);
         
-        ctx.font = `400 ${titleSize}px "${fontFamily}", system-ui`;
-        const shotOnWidth = ctx.measureText("Shot on ").width;
-        const cameraWidth = ctx.measureText(cameraText).width;
+        ctx.font = `400 ${adjustedTitleSize}px "${fontFamily}", system-ui`;
+        const adjustedShotOnWidth = ctx.measureText("Shot on ").width;
         
-        const totalWidth = shotOnWidth + cameraWidth;
+        ctx.font = `700 ${adjustedTitleSize}px "${fontFamily}", system-ui`;
+        const adjustedCameraWidth = ctx.measureText(cameraText).width;
+        
+        const adjustedTotalWidth = adjustedShotOnWidth + adjustedCameraWidth;
+        const startX = contentX + (imgW / 2) - (adjustedTotalWidth / 2);
+        
+        ctx.textAlign = "left";
+        ctx.font = `400 ${adjustedTitleSize}px "${fontFamily}", system-ui`;
+        ctx.fillText("Shot on ", startX, titleY);
+        
+        ctx.font = `700 ${adjustedTitleSize}px "${fontFamily}", system-ui`;
+        ctx.fillText(cameraText, startX + adjustedShotOnWidth, titleY);
+      } else {
         const startX = contentX + (imgW / 2) - (totalWidth / 2);
         
         ctx.textAlign = "left";
+        ctx.font = `400 ${titleSize}px "${fontFamily}", system-ui`;
         ctx.fillText("Shot on ", startX, titleY);
         
         ctx.font = `700 ${titleSize}px "${fontFamily}", system-ui`;
         ctx.fillText(cameraText, startX + shotOnWidth, titleY);
-        
-      } else if (this.textPosition === 'bottom-left') {
-        // Left alignment
-        const padding = 20;
-        const textX = contentX + padding;
-        
-        ctx.textAlign = "left";
-        
-        ctx.font = `400 ${titleSize}px "${fontFamily}", system-ui`;
-        ctx.fillText("Shot on ", textX, titleY);
-        
-        const shotOnWidth = ctx.measureText("Shot on ").width;
-        
-        ctx.font = `700 ${titleSize}px "${fontFamily}", system-ui`;
-        ctx.fillText(cameraText, textX + shotOnWidth, titleY);
-        
-      } else if (this.textPosition === 'bottom-right') {
-        // Right alignment - FIXED
-        const padding = 20;
-        const maxTextX = contentX + imgW - padding;
-        
-        ctx.textAlign = "right";
-        
-        // First, measure the total width
-        ctx.font = `400 ${titleSize}px "${fontFamily}", system-ui`;
-        const shotOnWidth = ctx.measureText("Shot on ").width;
-        
-        ctx.font = `700 ${titleSize}px "${fontFamily}", system-ui`;
-        const cameraWidth = ctx.measureText(cameraText).width;
-        
-        const totalWidth = shotOnWidth + cameraWidth;
-        const textX = maxTextX;
-        
-        // Draw camera brand/model first (right-aligned)
-        ctx.font = `700 ${titleSize}px "${fontFamily}", system-ui`;
-        ctx.fillText(cameraText, textX, titleY);
-        
-        // Then draw "Shot on " to the left of camera text
-        ctx.font = `400 ${titleSize}px "${fontFamily}", system-ui`;
-        ctx.fillText("Shot on ", textX - cameraWidth, titleY);
+      }
+      
+      // Draw EXIF data
+      ctx.font = `400 ${metaSize}px "${fontFamily}", system-ui`;
+      ctx.textAlign = "center";
+      
+      let exifString = this.getExifString(" • ");
+      if (exifString.trim()) {
+        ctx.fillText(exifString.trim(), contentX + (imgW / 2), metaY);
+      }
+      
+    } else if (this.textPosition === 'bottom-left') {
+      const textX = contentX + padding;
+      
+      ctx.textAlign = "left";
+      
+      ctx.font = `400 ${titleSize}px "${fontFamily}", system-ui`;
+      ctx.fillText("Shot on ", textX, titleY);
+      
+      const shotOnWidth = ctx.measureText("Shot on ").width;
+      
+      ctx.font = `700 ${titleSize}px "${fontFamily}", system-ui`;
+      ctx.fillText(cameraText, textX + shotOnWidth, titleY);
+      
+      // Draw EXIF data
+      ctx.font = `400 ${metaSize}px "${fontFamily}", system-ui`;
+      
+      let exifString = this.getExifString(" • ");
+      if (exifString.trim()) {
+        ctx.fillText(exifString.trim(), textX, metaY);
+      }
+      
+    } else if (this.textPosition === 'bottom-right') {
+      const maxTextX = contentX + imgW - padding;
+      
+      ctx.textAlign = "right";
+      
+      // Measure text widths
+      ctx.font = `400 ${titleSize}px "${fontFamily}", system-ui`;
+      const shotOnWidth = ctx.measureText("Shot on ").width;
+      
+      ctx.font = `700 ${titleSize}px "${fontFamily}", system-ui`;
+      const cameraWidth = ctx.measureText(cameraText).width;
+      
+      const textX = maxTextX;
+      
+      // Draw camera brand/model first
+      ctx.font = `700 ${titleSize}px "${fontFamily}", system-ui`;
+      ctx.fillText(cameraText, textX, titleY);
+      
+      // Then draw "Shot on " to the left
+      ctx.font = `400 ${titleSize}px "${fontFamily}", system-ui`;
+      ctx.fillText("Shot on ", textX - cameraWidth, titleY);
+      
+      // Draw EXIF data
+      ctx.font = `400 ${metaSize}px "${fontFamily}", system-ui`;
+      
+      let exifString = this.getExifString(" • ");
+      if (exifString.trim()) {
+        ctx.fillText(exifString.trim(), textX, metaY);
       }
     }
+  }
+
+  renderCompactLayout(ctx, contentX, imgW, titleY, metaY, titleSize, metaSize, fontFamily, lineSpacing, cameraText, padding) {
+    // Ensure text color is set
+    ctx.fillStyle = this.textColorEl.value;
+    
+    // Combined line: "Shot on Camera • EXIF data"
+    let combinedText = `Shot on ${cameraText}`;
+    let exifString = this.getExifString(" ");
+    
+    if (exifString.trim()) {
+      combinedText += ` • ${exifString.trim()}`;
+    }
+    
+    ctx.font = `500 ${titleSize}px "${fontFamily}", system-ui`;
+    const textWidth = ctx.measureText(combinedText).width;
+    const maxWidth = imgW - padding * 2;
+    
+    if (this.textPosition === 'bottom-center') {
+      ctx.textAlign = "center";
+      
+      if (textWidth > maxWidth) {
+        const scaleFactor = maxWidth / textWidth;
+        const adjustedTitleSize = titleSize * Math.min(scaleFactor, 1);
+        ctx.font = `500 ${adjustedTitleSize}px "${fontFamily}", system-ui`;
+      }
+      ctx.fillText(combinedText, contentX + (imgW / 2), titleY);
+      
+    } else if (this.textPosition === 'bottom-left') {
+      const textX = contentX + padding;
+      ctx.textAlign = "left";
+      ctx.fillText(combinedText, textX, titleY);
+      
+    } else if (this.textPosition === 'bottom-right') {
+      const maxTextX = contentX + imgW - padding;
+      ctx.textAlign = "right";
+      ctx.fillText(combinedText, maxTextX, titleY);
+    }
+  }
+
+  renderMinimalLayout(ctx, contentX, imgW, titleY, metaY, titleSize, metaSize, fontFamily, lineSpacing, cameraText, padding) {
+    // Ensure text color is set
+    ctx.fillStyle = this.textColorEl.value;
+    
+    if (this.textPosition === 'bottom-center') {
+      ctx.textAlign = "center";
+      
+      ctx.font = `700 ${titleSize}px "${fontFamily}", system-ui`;
+      const textWidth = ctx.measureText(cameraText).width;
+      const maxWidth = imgW - padding * 2;
+      
+      if (textWidth > maxWidth) {
+        const scaleFactor = maxWidth / textWidth;
+        const adjustedTitleSize = titleSize * Math.min(scaleFactor, 1);
+        ctx.font = `700 ${adjustedTitleSize}px "${fontFamily}", system-ui`;
+      }
+      ctx.fillText(cameraText, contentX + (imgW / 2), titleY);
+      
+      // EXIF data in smaller font below
+      ctx.font = `300 ${metaSize * 0.9}px "${fontFamily}", system-ui`;
+      
+      let exifString = this.getExifString("  ");
+      if (exifString.trim()) {
+        ctx.fillText(exifString.trim(), contentX + (imgW / 2), metaY);
+      }
+      
+    } else if (this.textPosition === 'bottom-left') {
+      const textX = contentX + padding;
+      
+      ctx.textAlign = "left";
+      ctx.font = `700 ${titleSize}px "${fontFamily}", system-ui`;
+      ctx.fillText(cameraText, textX, titleY);
+      
+      // EXIF data
+      ctx.font = `300 ${metaSize * 0.9}px "${fontFamily}", system-ui`;
+      
+      let exifString = this.getExifString("  ");
+      if (exifString.trim()) {
+        ctx.fillText(exifString.trim(), textX, metaY);
+      }
+      
+    } else if (this.textPosition === 'bottom-right') {
+      const maxTextX = contentX + imgW - padding;
+      
+      ctx.textAlign = "right";
+      ctx.font = `700 ${titleSize}px "${fontFamily}", system-ui`;
+      ctx.fillText(cameraText, maxTextX, titleY);
+      
+      // EXIF data
+      ctx.font = `300 ${metaSize * 0.9}px "${fontFamily}", system-ui`;
+      
+      let exifString = this.getExifString("  ");
+      if (exifString.trim()) {
+        ctx.fillText(exifString.trim(), maxTextX, metaY);
+      }
+    }
+  }
+
+  renderVerticalLayout(ctx, contentX, imgW, titleY, metaY, titleSize, metaSize, fontFamily, lineSpacing, cameraText, padding) {
+    // Ensure text color is set
+    ctx.fillStyle = this.textColorEl.value;
+    
+    const verticalSpacing = titleSize * lineSpacing * 0.7;
+    
+    if (this.textPosition === 'bottom-center') {
+      ctx.textAlign = "center";
+      const centerX = contentX + (imgW / 2);
+      
+      // Camera brand
+      ctx.font = `700 ${titleSize}px "${fontFamily}", system-ui`;
+      ctx.fillText(cameraText, centerX, titleY);
+      
+      // EXIF data items vertically
+      ctx.font = `400 ${metaSize}px "${fontFamily}", system-ui`;
+      let yPos = titleY + verticalSpacing;
+      
+      if (this.exif.focal) {
+        ctx.fillText(`${Math.round(this.exif.focal)}mm`, centerX, yPos);
+        yPos += verticalSpacing;
+      }
+      if (this.exif.aperture) {
+        ctx.fillText(`f/${this.exif.aperture}`, centerX, yPos);
+        yPos += verticalSpacing;
+      }
+      if (this.exif.shutter) {
+        const shutterText = this.exif.shutter < 1 ? 
+          `1/${Math.round(1 / this.exif.shutter)}s` : `${this.exif.shutter}s`;
+        ctx.fillText(shutterText, centerX, yPos);
+        yPos += verticalSpacing;
+      }
+      if (this.exif.iso) {
+        ctx.fillText(`ISO${this.exif.iso}`, centerX, yPos);
+      }
+      
+    } else if (this.textPosition === 'bottom-left') {
+      const textX = contentX + padding;
+      
+      ctx.textAlign = "left";
+      
+      // Camera brand
+      ctx.font = `700 ${titleSize}px "${fontFamily}", system-ui`;
+      ctx.fillText(cameraText, textX, titleY);
+      
+      // EXIF data items vertically
+      ctx.font = `400 ${metaSize}px "${fontFamily}", system-ui`;
+      let yPos = titleY + verticalSpacing;
+      
+      if (this.exif.focal) {
+        ctx.fillText(`${Math.round(this.exif.focal)}mm`, textX, yPos);
+        yPos += verticalSpacing;
+      }
+      if (this.exif.aperture) {
+        ctx.fillText(`f/${this.exif.aperture}`, textX, yPos);
+        yPos += verticalSpacing;
+      }
+      if (this.exif.shutter) {
+        const shutterText = this.exif.shutter < 1 ? 
+          `1/${Math.round(1 / this.exif.shutter)}s` : `${this.exif.shutter}s`;
+        ctx.fillText(shutterText, textX, yPos);
+        yPos += verticalSpacing;
+      }
+      if (this.exif.iso) {
+        ctx.fillText(`ISO${this.exif.iso}`, textX, yPos);
+      }
+      
+    } else if (this.textPosition === 'bottom-right') {
+      const maxTextX = contentX + imgW - padding;
+      
+      ctx.textAlign = "right";
+      
+      // Camera brand
+      ctx.font = `700 ${titleSize}px "${fontFamily}", system-ui`;
+      ctx.fillText(cameraText, maxTextX, titleY);
+      
+      // EXIF data items vertically
+      ctx.font = `400 ${metaSize}px "${fontFamily}", system-ui`;
+      let yPos = titleY + verticalSpacing;
+      
+      if (this.exif.focal) {
+        ctx.fillText(`${Math.round(this.exif.focal)}mm`, maxTextX, yPos);
+        yPos += verticalSpacing;
+      }
+      if (this.exif.aperture) {
+        ctx.fillText(`f/${this.exif.aperture}`, maxTextX, yPos);
+        yPos += verticalSpacing;
+      }
+      if (this.exif.shutter) {
+        const shutterText = this.exif.shutter < 1 ? 
+          `1/${Math.round(1 / this.exif.shutter)}s` : `${this.exif.shutter}s`;
+        ctx.fillText(shutterText, maxTextX, yPos);
+        yPos += verticalSpacing;
+      }
+      if (this.exif.iso) {
+        ctx.fillText(`ISO${this.exif.iso}`, maxTextX, yPos);
+      }
+    }
+  }
+
+  renderNoExifLayout(ctx, contentX, imgW, titleY, titleSize, fontFamily, cameraText, padding) {
+    // Ensure text color is set
+    ctx.fillStyle = this.textColorEl.value;
+    
+    if (this.textPosition === 'bottom-center') {
+      ctx.textAlign = "center";
+      
+      ctx.font = `400 ${titleSize}px "${fontFamily}", system-ui`;
+      const shotOnWidth = ctx.measureText("Shot on ").width;
+      const cameraWidth = ctx.measureText(cameraText).width;
+      
+      const totalWidth = shotOnWidth + cameraWidth;
+      const maxWidth = imgW - padding * 2;
+      
+      if (totalWidth > maxWidth) {
+        const scaleFactor = maxWidth / totalWidth;
+        const adjustedTitleSize = titleSize * Math.min(scaleFactor, 1);
+        
+        ctx.font = `400 ${adjustedTitleSize}px "${fontFamily}", system-ui`;
+        const adjustedShotOnWidth = ctx.measureText("Shot on ").width;
+        
+        ctx.font = `700 ${adjustedTitleSize}px "${fontFamily}", system-ui`;
+        const adjustedCameraWidth = ctx.measureText(cameraText).width;
+        
+        const adjustedTotalWidth = adjustedShotOnWidth + adjustedCameraWidth;
+        const startX = contentX + (imgW / 2) - (adjustedTotalWidth / 2);
+        
+        ctx.textAlign = "left";
+        ctx.font = `400 ${adjustedTitleSize}px "${fontFamily}", system-ui`;
+        ctx.fillText("Shot on ", startX, titleY);
+        
+        ctx.font = `700 ${adjustedTitleSize}px "${fontFamily}", system-ui`;
+        ctx.fillText(cameraText, startX + adjustedShotOnWidth, titleY);
+      } else {
+        const startX = contentX + (imgW / 2) - (totalWidth / 2);
+        
+        ctx.textAlign = "left";
+        ctx.font = `400 ${titleSize}px "${fontFamily}", system-ui`;
+        ctx.fillText("Shot on ", startX, titleY);
+        
+        ctx.font = `700 ${titleSize}px "${fontFamily}", system-ui`;
+        ctx.fillText(cameraText, startX + shotOnWidth, titleY);
+      }
+      
+    } else if (this.textPosition === 'bottom-left') {
+      const textX = contentX + padding;
+      
+      ctx.textAlign = "left";
+      
+      ctx.font = `400 ${titleSize}px "${fontFamily}", system-ui`;
+      ctx.fillText("Shot on ", textX, titleY);
+      
+      const shotOnWidth = ctx.measureText("Shot on ").width;
+      
+      ctx.font = `700 ${titleSize}px "${fontFamily}", system-ui`;
+      ctx.fillText(cameraText, textX + shotOnWidth, titleY);
+      
+    } else if (this.textPosition === 'bottom-right') {
+      const maxTextX = contentX + imgW - padding;
+      
+      ctx.textAlign = "right";
+      
+      ctx.font = `400 ${titleSize}px "${fontFamily}", system-ui`;
+      const shotOnWidth = ctx.measureText("Shot on ").width;
+      
+      ctx.font = `700 ${titleSize}px "${fontFamily}", system-ui`;
+      const cameraWidth = ctx.measureText(cameraText).width;
+      
+      const textX = maxTextX;
+      
+      // Draw camera brand/model first
+      ctx.font = `700 ${titleSize}px "${fontFamily}", system-ui`;
+      ctx.fillText(cameraText, textX, titleY);
+      
+      // Then draw "Shot on " to the left
+      ctx.font = `400 ${titleSize}px "${fontFamily}", system-ui`;
+      ctx.fillText("Shot on ", textX - cameraWidth, titleY);
+    }
+  }
+
+  getExifString(separator) {
+    let exifString = "";
+    if (this.exif.focal) exifString += Math.round(this.exif.focal) + "mm" + separator;
+    if (this.exif.aperture) exifString += "f/" + this.exif.aperture + separator;
+    if (this.exif.shutter) {
+      if (this.exif.shutter < 1) {
+        exifString += "1/" + Math.round(1 / this.exif.shutter) + "s" + separator;
+      } else {
+        exifString += this.exif.shutter + "s" + separator;
+      }
+    }
+    if (this.exif.iso) exifString += "ISO" + this.exif.iso;
+    
+    const sepLength = separator.length;
+    if (exifString.endsWith(separator)) {
+      exifString = exifString.slice(0, -sepLength);
+    }
+    
+    return exifString.trim();
   }
 
   download() {
@@ -1657,66 +2230,42 @@ class EXIFBorderApp {
   }
 
   initServiceWorker() {
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('sw.js')
-          .then(registration => {
-            console.log('ServiceWorker registered');
-          })
-          .catch(err => {
-            console.log('ServiceWorker registration failed:', err);
-          });
-      });
+    if ('serviceWorker' in navigator && location.protocol === 'https:') {
+      navigator.serviceWorker.register('sw.js').catch(console.log);
     }
   }
 }
 
-// Initialize app when DOM is loaded
+// Initialize app
 document.addEventListener('DOMContentLoaded', () => {
-  new EXIFBorderApp();
+  const app = new EXIFBorderApp();
+  window.app = app;
 });
 
-// Add beforeinstallprompt for PWA installation
-let deferredPrompt;
+// PWA installation
 window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault();
-  deferredPrompt = e;
-  
-  // Show install button after 3 seconds
   setTimeout(() => {
-    if (deferredPrompt) {
-      const installBtn = document.createElement('button');
-      installBtn.textContent = '📱 Install App';
-      installBtn.style.cssText = `
-        position: fixed;
-        bottom: 20px;
-        right: 20px;
-        padding: 10px 20px;
-        background: var(--accent);
-        color: white;
-        border: none;
-        border-radius: 20px;
-        font-size: 14px;
-        cursor: pointer;
-        z-index: 1000;
-        box-shadow: var(--shadow-md);
-        transition: var(--transition);
-      `;
-      installBtn.onclick = () => {
-        deferredPrompt.prompt();
-        deferredPrompt.userChoice.then(() => {
-          installBtn.remove();
-        });
-      };
-      document.body.appendChild(installBtn);
-      
-      // Auto-remove after 10 seconds
-      setTimeout(() => {
-        if (installBtn.parentNode) {
-          installBtn.remove();
-        }
-      }, 10000);
-    }
+    const installBtn = document.createElement('button');
+    installBtn.textContent = '📱 Install App';
+    installBtn.style.cssText = `
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      padding: 10px 20px;
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: 20px;
+      font-size: 14px;
+      cursor: pointer;
+      z-index: 1000;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    `;
+    installBtn.onclick = () => e.prompt();
+    document.body.appendChild(installBtn);
+    
+    setTimeout(() => installBtn.remove(), 10000);
   }, 3000);
 });
 </script>
